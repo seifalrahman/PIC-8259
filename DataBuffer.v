@@ -3,7 +3,6 @@ module DataBuffer (
   input wire R, W
   ,output reg [7:0] buffer
 );
-	
 always @(*)
 begin
 	buffer = (R == 0 && W == 1) ? InternalD : buffer;//read

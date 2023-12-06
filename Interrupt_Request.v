@@ -17,7 +17,7 @@ module Interrupt_Request(
     
     genvar ir_bit_no;
         
-    generate for (ir_bit_no = 0; ir_bit_no <= 7; ir_bit_no = ir_bit_no + 1) begin: Request_Latch
+    generate for (ir_bit_no = 0; ir_bit_no <= 7; ir_bit_no = ir_bit_no + 1) begin: generate_8bit_IRR_processing
         
         always @(*)  begin
           if(!edge_level_config) begin

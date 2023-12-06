@@ -1,16 +1,16 @@
 module Interrupt_Request(
-    // Inputs from control logic
     
+    // Inputs from control logic
     input wire edge_level_config,    //1 is for level , 0 is for edge
     input wire freeze,
     input wire [7:0] clear_interrupt_req,
 
     // External inputs
-    
     input wire [7:0] interrupt_req_pin,
 
     // Outputs
     output reg [7:0] interrupt_req_register = 8'b00000000
+    
 );
     
     genvar ir_bit_no;

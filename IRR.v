@@ -1,6 +1,4 @@
 module Interrupt_Request(
-    // Inputs from control logic
-    
     //1 is for level , 0 is for edge
     input wire edge_level_config,
     

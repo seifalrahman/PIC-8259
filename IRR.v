@@ -1,7 +1,4 @@
 module Interrupt_Request(
-    input wire clock,
-    input wire reset,
-
     // Inputs from control logic
     
     //1 is for level , 0 is for edge
@@ -33,14 +30,6 @@ module Interrupt_Request(
              
         end
       end
-      
-      else begin
-          always @(*) begin
-            interrupt_req_register[ir_bit_no] <= interrupt_req_pin[ir_bit_no];
-          end
-      end
-         
-    end
     endgenerate
 
 endmodule

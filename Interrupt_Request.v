@@ -1,14 +1,12 @@
 module Interrupt_Request(
-
     // Inputs from control logic
     
-    //1 is for level , 0 is for edge
-    input wire edge_level_config,
-    
+    input wire edge_level_config,    //1 is for level , 0 is for edge
     input wire freeze,
     input wire [7:0] clear_interrupt_req,
 
     // External inputs
+    
     input wire [7:0] interrupt_req_pin,
 
     // Outputs
@@ -32,10 +30,10 @@ module Interrupt_Request(
           end
           
           else begin
-         if(clear_interrupt_req[ir_bit_no])
-            interrupt_req_register[ir_bit_no] <= 1'b0;
-         else
-                      interrupt_req_register[ir_bit_no] <= interrupt_req_pin[ir_bit_no];
+             if(clear_interrupt_req[ir_bit_no])
+                 interrupt_req_register[ir_bit_no] <= 1'b0;
+             else
+                 interrupt_req_register[ir_bit_no] <= interrupt_req_pin[ir_bit_no];
           end   
         end
          

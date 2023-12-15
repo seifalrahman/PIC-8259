@@ -22,8 +22,6 @@ module Control_Logic(
 );
   
   
-  
-  
     // Operation control word 1 
     // IMR
     always @(*) begin
@@ -135,4 +133,16 @@ module Control_Logic(
         end
         else
             priority_rotate <= priority_rotate;
+    end
+    
+    
+    
+    // clear_interrupt_request
+    always @(*) begin
+        if (write_initial_command_word_1 == 1'b1)
+            clear_interrupt_request = 8'b11111111;
+        else if (latch_in_service == 1'b0)
+            clear_interrupt_request = 8'b00000000;
+        else
+            clear_interrupt_request = interrupt;
     end

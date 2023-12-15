@@ -6,8 +6,8 @@ module Priority_Resolver(
     input   wire   [2:0]   priority_rotate,
     input   wire   [7:0]   interrupt_mask,
     input   wire   [7:0]   interrupt_special_mask,
-    input   wire           special_fully_nest_config,
-    input   wire   [7:0]   highest_level_in_service,
+    //input   wire         special_fully_nest_config,
+    //input   wire   [7:0]   highest_level_in_service,
 
     // Inputs from interrupt request 
     input   wire   [7:0]   interrupt_request_register,
@@ -36,16 +36,19 @@ module Priority_Resolver(
   
     // Resolve priority 
     reg    [7:0]   rotated_in_service , priority_mask;
-    wire   [7:0]   rotated_request, rotated_highest_level_in_service ,rotated_interrupt;
-    
+    wire   [7:0]   rotated_request , rotated_interrupt;
+    //wire   [7:0]   rotated_highest_level_in_service
     
     always @* begin
       // ADD AN ALWAYS
       // rotate register (after checking masking)
       rotated_request = rotate_right(masked_interrupt_request, priority_rotate);
-    
+      
       // we get highest level from In service , to be cleared in case of non specific EOI (L0~L2)
-      rotated_highest_level_in_service = rotate_right(highest_level_in_service, priority_rotate);
+      //rotated_highest_level_in_service = rotate_right(highest_level_in_service, priority_rotate);
+      
+      rotated_in_service = rotate_right(masked_in_service, priority_rotate);
+       
     end
 
     //disable interrupts of lower priority while allowing all interrupts of higher priority
@@ -65,7 +68,7 @@ module Priority_Resolver(
     always @* begin
       // resolve priority then add with mask(which allows only higher priorities in case of currently executing an interrupt)
       rotated_interrupt = resolv_priority(rotated_request) & priority_mask;
-    
+      
       // rotate the result back into its rightful position as each device 
       // has its ISR at a certain unchanged location marked by its initial location
       interrupt = rotate_left(rotated_interrupt, priority_rotate);

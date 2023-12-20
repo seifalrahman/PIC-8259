@@ -23,10 +23,12 @@ always @ (*)begin
             hasSlave<=8'b00000000 ;//in order not to infer latches
             end                
         else if(1==SP_EN)
+    begin
             hasSlave<=ICW3 ;    
 
             ID<=3'b000;//in order not to infer latches
         
+        end
     end
     else 
     begin
@@ -57,6 +59,6 @@ end
 
 assign CAS = CASBUFFER ;
 
-assign codeAddress = (flagCodeAddress == 1) ? CODEADDRESS : 8'bzzzzzzzz;
+assign codeAddress = (flagCodeAddress == 1 && SP_EN ==0 ) ? CODEADDRESS : 8'bzzzzzzzz;
 
 endmodule

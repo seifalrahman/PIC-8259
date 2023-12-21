@@ -11,6 +11,7 @@ module Control_Logic(
     //***************************************************************
     //IRR************************************************************
     input wire [7:0]  IRRinput ,
+    output reg edge_level_config ,
     //***************************************************************
     //ISR************************************************************
     input wire [7:0]  ISRinput ,
@@ -60,7 +61,7 @@ always @ (FlagFromRW or ReadWriteinputData)begin
                
 		priority_rotate <= 3'b111;  //  while intiializing set priority to 7 (no rotation) (init phase)
                 auto_rotate_mode = 1'b0;    //  while intiializing deactivate rotate mode (init phase)
-		
+		edge_level_config = CWregFile[0][3];
 end
 	else if (FlagFromRW==1)begin
 		CWregFile[1]=ReadWriteinputData ;
@@ -271,5 +272,4 @@ always @(*) begin
 end
    
 
- 
-endmodule
+ endmodule

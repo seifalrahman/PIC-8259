@@ -3,7 +3,12 @@ module Control_Logic(
 
     // Read_writeLogic***********************************************
     input wire  [7:0]   ReadWriteinputData,
-    input wire  [2:0]   FlagFromRW ,
+    
+    
+    //ICW1 -> flag==0
+    //OCW3 -> flag==6
+    input wire  [2:0]   FlagFromRW , 
+    
     input wire  [2:0]   read2controlRW,
     //***************************************************************
     //Data Buffer ***************************************************
@@ -15,6 +20,7 @@ module Control_Logic(
     //***************************************************************
     //ISR************************************************************
     input wire [7:0]  ISRinput ,
+    input wire [7:0]  highest_level_in_service ,
     //***************************************************************
     //CASCADEMODULE**************************************************
     output reg SP_ENCascade ,
@@ -34,8 +40,8 @@ module Control_Logic(
     output  reg   [7:0]   end_of_interrupt,
     output  reg   [2:0]   priority_rotate,
     output  reg           freeze,
-    output  wire          latch_in_service,//---------???????
-    output  wire   [7:0]  clear_interrupt_request
+    output  reg          latch_in_service,//---------???????
+    output  reg   [7:0]  clear_interrupt_request
     
 );
     reg [7:0] CWregFile [6:0] ; //ICW .....OCW
@@ -43,6 +49,7 @@ module Control_Logic(
     reg ICW1,ICW2,ICW3,ICW4,OCW1,OCW2,OCW3 ;
     reg AEOI ;
     reg [1:0] SpecialMaskModeFlag ;
+    reg end_of_acknowledge_sequence;
 //This Block Stores The ICWs and OCWs in our register File and sets their Flags to indicate that we stored them 
 
 always @ (FlagFromRW or ReadWriteinputData)begin
@@ -67,15 +74,15 @@ end
 	else if (FlagFromRW==1)begin
 		CWregFile[1]=ReadWriteinputData ;
 		ICW2=1;
-		ICW2Cascade=CWregFile[1] ;
-		
-end
+		ICW2Cascade=CWregFile[1] ;		
+  end
+
 	else if (FlagFromRW==2)begin
 		CWregFile[2]=ReadWriteinputData ;
 		ICW3=1;
-	        ICW3Cascade=CWregFile[1] ;
+	  ICW3Cascade=CWregFile[1] ;
+	end
 		
-end
 	else if (FlagFromRW==3)begin
 		CWregFile[3]=ReadWriteinputData ;
 		ICW4=1;
@@ -130,15 +137,6 @@ end
 assign IRRCascade = InterruptID ;
 
 
-//register to hold result of Num_To_Bit(value data bus) in case of specific EOI
-    reg [7:0] Specific_EOI = 8'b00000000;
-    
-    Num_To_Bit n1(
-        .source(internal_data_bus[2:0]),
-        .num2bit(Specific_EOI)
-    );
-
-
 // Acknowledge + Freeze + CLR IRR
 reg cnt=0 ;
 always @(posedge INTA)begin
@@ -184,21 +182,30 @@ always @(SpecialMaskModeFlag or CWregFile[4]) begin
        
         // in case of writing on OCW1 while special mask mode is enabled -> put data on data line 
         // into interrupt special mask reg
-        else if ((OCW1 == 1'b1) && (SpecialMaskModeFlag == 2'b11))
+        else if ((FlagFromRW == 3'b100) && (SpecialMaskModeFlag == 2'b11))
             interrupt_special_mask <= CWregFile[4];
         
         else
             interrupt_special_mask <= interrupt_special_mask;
 end
+  
+  
     
+//register to hold result of Num_To_Bit(value data bus) in case of specific EOI
+reg [7:0] Specific_EOI = 8'b00000000;
     
+Num_To_Bit n1(
+     .source(CWregFile[5][2:0]),
+     .num2bit(Specific_EOI)
+);
+
 // End of interrupt
 always @(*) begin
         
         if ((AEOI == 1'b1) && (end_of_acknowledge_sequence == 1'b1))
             end_of_interrupt = highest_level_in_service;
-        else if (OCW2) begin
-            case (internal_data_bus[6:5])
+        else if (FlagFromRW == 3'b101) begin
+            case (CWregFile[5][6:5])
                 2'b01:   end_of_interrupt = highest_level_in_service;
                 2'b11:   end_of_interrupt = Specific_EOI;
                 default: end_of_interrupt = 8'b00000000;
@@ -212,8 +219,8 @@ end
     // Auto rotate mode
 always @(*) begin
         // in case of OCW2 (where it's initialized) if R bit is set -> rotate mode
-        if (OCW2 == 1'b1 && AEOI== 1'b1) begin
-            case(internal_data_bus[7:5])
+        if (FlagFromRW == 3'b101 && AEOI== 1'b1) begin
+            case(CWregFile[5][7:5])
                 3'b000:  auto_rotate_mode <= 1'b0;  // disable auto rotate mode (AEOI)
                 3'b100:  auto_rotate_mode <= 1'b1;  // enable  auto rotate mode (AEOI)
                 default: auto_rotate_mode <= auto_rotate_mode;
@@ -247,9 +254,9 @@ always @(*) begin
             priority_rotate <= Non_spec_EOI_rotation;
         
         // in case of currently writing OCW2:
-        else if (OCW2) begin
+        else if (FlagFromRW == 3'b101) begin
             //check R , SL , EOI bits
-            case (internal_data_bus[7:5])
+            case (CWregFile[5][7:5])
                 // 101 -> rotate on non specific EOI
                 // sends EOI to show that interrupt is finished
                 // now need to have the info about the interrupt that just finished (highest_level_in_service)
@@ -257,8 +264,8 @@ always @(*) begin
                 3'b101:  priority_rotate <= Non_spec_EOI_rotation;  // non specific EOI -> clear highest_level_in_service
                 
                 // Take priority rotation from L2~L0 ( in case of specific rotation )
-                3'b110:  priority_rotate <= internal_data_bus[2:0];
-                3'b111:  priority_rotate <= internal_data_bus[2:0];
+                3'b110:  priority_rotate <= CWregFile[5][2:0];
+                3'b111:  priority_rotate <= CWregFile[5][2:0];
                 default: priority_rotate <= priority_rotate;
             endcase
         end
@@ -272,7 +279,7 @@ always @(latch_in_service) begin
       if (latch_in_service == 1'b0)
           clear_interrupt_request = 8'b00000000;
       else
-          clear_interrupt_request = interrupt;
+          clear_interrupt_request = InterruptID;
 end
    
    

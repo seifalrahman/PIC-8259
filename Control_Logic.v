@@ -1,5 +1,6 @@
 module Control_Logic(
 
+
     // Read_writeLogic***********************************************
     input wire  [7:0]   ReadWriteinputData,
     input wire  [2:0]   FlagFromRW ,

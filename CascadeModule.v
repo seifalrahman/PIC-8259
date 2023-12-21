@@ -5,15 +5,15 @@ module Cascademodule (inout wire [2:0]CAS ,
               input wire INTA ,
 		/*The cascade bus lines are normally low and 
                   will contain the slave address code from the trailing edge of
-                  the first INTA pulse to the trailing edge of the third
+                  the first INTA pulse to the trailing edge of the second
                   pulse*/
-              output wire [7:0] codeAddress
+              output wire [7:0] codeAddress ,
+	      output reg flagCodeAddress  
 		);
 
 reg [2:0] ID ;
 reg [3:0]IRRtemp;
 reg [7:0] hasSlave ;
-reg flagCodeAddress;
 reg [2:0] CASBUFFER ;
 reg [7:0] CODEADDRESS;
 
@@ -65,20 +65,29 @@ always @ (*)begin
         end
 
 end
+reg cnt =0 ;
 always@(posedge INTA)begin// the positive edge is the trailing edge 
-    
+    cnt=cnt+1;
+
         if(SP_EN==1) //MASTER
             CASBUFFER<=IRRtemp[2:0];
 /*I assumed that the priority resolver will send me the highest priority so i don't need
 any further check on the priority 
 */           
         else 
-            if(CAS==ID || SNGL==1)begin  
+	if(CAS==ID || SNGL==1)begin  
 /* in case it is in single mode so we put the address on the data buffer anyways
 *in case it is in cascade mode we have to check whether the slave is enabled or not 
-*/                CODEADDRESS<={ICW2[7:3],IRRtemp[2:0]} ;//Assumed Code Address
-		flagCodeAddress = 1; 
-                end  
+*/      	   
+		if(cnt == 2)
+		begin
+			cnt = 0 ;
+			flagCodeAddress = 1;
+			
+		end     
+		CODEADDRESS<={ICW2[7:3],IRRtemp[2:0]} ;//Assumed Code Address
+		 
+	end  
 end
 
 always@(negedge INTA)begin

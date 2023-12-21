@@ -51,6 +51,12 @@ always @ (FlagFromRW or ReadWriteinputData)begin
 		SP_ENCascade=0;
 		SNGL=CWregFile[0][1] ;
 		AEOI=0;
+		interrupt_mask = 8'b11111111;
+                end_of_interrupt = 8'b11111111;
+                clear_interrupt_request = 8'b11111111;
+        
+                priority_rotate <= 3'b111;  //  while intiializing set priority to 7 (no rotation) (init phase)
+                auto_rotate_mode = 1'b0;    //  while intiializing deactivate rotate mode (init phase)
 		
 end
 	else if (FlagFromRW==1)begin

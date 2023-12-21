@@ -41,15 +41,17 @@ Read_WriteLogic ReadWriteLogic(
     .read2control(R_Flag_2Control)                    
     );
 
+
 //Control-->Cascade
 wire [7:0] ICW3Cascade    ;
 wire [7:0] IRRCascade    ; //it has only one bit set from ISR
-wire [7:0] ICW2Cascade    ;     
+wire [7:0] ICW2Cascade    ; 
+wire SP_ENCascade;    
 wire SNGL;//to check singlr or cascade mode
  
 Cascademodule Cascade_Buffer_Comparator(
     .CAS(CAS)                    ,
-    .SP_EN(SP_EN_n)                    ,
+    .SP_EN(SP_ENCascade)                ,
     .ICW3(ICW3Cascade)                ,
     .IRR(IRRCascade)                ,
     .ICW2(ICW2Cascade)                ,    
@@ -58,11 +60,4 @@ Cascademodule Cascade_Buffer_Comparator(
     .codeAddress(InternalData)            ,
     .flagCodeAddress(Flag_From_Cascade)
     );
-
-
-
-
-
-
-
 endmodule

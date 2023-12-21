@@ -1,8 +1,4 @@
-module Control_Logic(
-
-  //  REMOVE ALL RESETS -------------------------------------------------------------------------------
-  // REMEMBER THE FUNCTIONS ------------------------------------------------------------------------------
-    
+module Control_Logic(   
 
     // Read_writeLogic***********************************************
     input wire  [7:0]   ReadWriteinputData,
@@ -28,19 +24,21 @@ module Control_Logic(
     //Priority Resolver *********************************************
     input wire [7:0] InterruptID ,  // it has only one bit set
     //***************************************************************	 
+    input wire INTA  ,
+    output reg INT   ,
     // Interrupt control signals
     output  reg   [7:0]   interrupt_mask,//IMR
-    output  logic   [7:0]   interrupt_special_mask,//---------??????
-    output  logic   [7:0]   end_of_interrupt,
-    output  logic   [2:0]   priority_rotate,
-    output  logic           freeze,
-    output  logic           latch_in_service,//---------???????
-    output  logic   [7:0]   clear_interrupt_request
+    output  reg   [7:0]   interrupt_special_mask,
+    output  reg   [7:0]   end_of_interrupt,
+    output  reg   [2:0]   priority_rotate,
+    output  reg           freeze,
+    output  wire           latch_in_service,//---------???????
+    output  wire   [7:0]   clear_interrupt_request
     
 );
-reg [7:0] CWregFile [6:0] ; //ICW .....OCW
-reg auto_rotate_mode = 1'b0;
-reg ICW1,ICW2,ICW3,ICW4,OCW1,OCW2,OCW3 ;
+    reg [7:0] CWregFile [6:0] ; //ICW .....OCW
+    reg auto_rotate_mode = 1'b0;
+    reg ICW1,ICW2,ICW3,ICW4,OCW1,OCW2,OCW3 ;
 reg AEOI ;
 //This Block Stores The ICWs and OCWs in our register File and sets their Flags to indicate that we stored them 
 
@@ -131,11 +129,63 @@ assign IRRCascade = InterruptID ;
         .source(internal_data_bus[2:0]),
         .num2bit(Specific_EOI)
     );
-    
+
+
+
+reg cnt=0 ;
+always @(posedge INTA)begin
+	
+	cnt=cnt+1;
+	if(cnt==1)
+		end_of_acknowledge_sequence=0 ;
+	else if(cnt==2)begin
+		cnt=0;
+		end_of_acknowledge_sequence=1 ;
+		freeze=0;
+	end
+	
+end
+always @ (negedge INTA)begin
+freeze=1;
+end
+
+
+always @ (InterruptID)begin
+	if(InterruptID!=0)
+		INT=1 ;
+	else
+		INT=0 ;
+
+end
+
+// Special mask
+always @(*) begin
         
+        // due to functionality of interrupt_special_mask it should initially start with zeros
+        // as it's different from interrupt mask (temporarily change enabled/disabled interrupts)
+        if (reset)
+            interrupt_special_mask <= 8'b00000000;
+        
+        // in case of still writing on ICW1 set interrupt special mask to initial state
+        else if (write_initial_command_word_1 == 1'b1)
+            interrupt_special_mask <= 8'b00000000;
+        
+        // special mask mode is diabled
+        else if (special_mask_mode == 1'b0)
+            interrupt_special_mask <= 8'b00000000;
+       
+        // in case of writing on OCW1 while special mask mode is enabled -> put data on data line 
+        // into interrupt special mask reg
+        else if ((write_operation_control_word_1_registers  == 1'b1) && (special_mask_mode == 1'b1))
+            interrupt_special_mask <= internal_data_bus;
+        
+        else
+            interrupt_special_mask <= interrupt_special_mask;
+end
+    
     
     // End of interrupt
-    always @(*) begin
+always @(*) begin
         
         if ((AEOI == 1'b1) && (end_of_acknowledge_sequence == 1'b1))
             end_of_interrupt = acknowledge_interrupt;
@@ -148,11 +198,11 @@ assign IRRCascade = InterruptID ;
         end
         else
             end_of_interrupt = 8'b00000000;
-    end
+end
     
     
     // Auto rotate mode
-    always @(*) begin
+always @(*) begin
         // in case of OCW2 (where it's initialized) if R bit is set -> rotate mode
         if (OCW2 == 1'b1 && AEOI== 1'b1) begin
             case(internal_data_bus[7:5])
@@ -163,7 +213,7 @@ assign IRRCascade = InterruptID ;
         end
         else
             auto_rotate_mode <= auto_rotate_mode;
-    end
+end
 
 
     // Rotate (Determine priority rotate values)
@@ -184,7 +234,7 @@ assign IRRCascade = InterruptID ;
     
     // Rotate (Determine priority rotate values)
     // which is used in Priority Resolver
-    always @(*) begin
+always @(*) begin
 
         // in case of (AEOI mode only) auto rotate mode enabled , and an AEOI is received then 
         // rotate priorities (checking R bit + EOI are set or not)
@@ -211,15 +261,17 @@ assign IRRCascade = InterruptID ;
         end
         else
             priority_rotate <= priority_rotate;
-    end
+end
     
     
     // clear_interrupt_request
-    always @(*) begin
+always @(*) begin
         if (latch_in_service == 1'b0)
             clear_interrupt_request = 8'b00000000;
         else
             clear_interrupt_request = interrupt;
-    end
-    
+end
+   
+
+ 
 endmodule

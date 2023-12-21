@@ -54,9 +54,10 @@ always @ (FlagFromRW or ReadWriteinputData)begin
 		SNGL=CWregFile[0][1] ;
 		AEOI=0;
 		interrupt_mask = 8'b11111111;
-                end_of_interrupt = 8'b11111111;
-                clear_interrupt_request = 8'b11111111;
-        	interrupt_special_mask <= 8'b00000000;   // due to functionality of interrupt_special_mask it should initially start with zeros
+    
+    end_of_interrupt = 8'b11111111;
+    clear_interrupt_request = 8'b11111111;
+   	interrupt_special_mask <= 8'b00000000;   // due to functionality of interrupt_special_mask it should initially start with zeros
         						 // as it's different from interrupt mask (temporarily change enabled/disabled interrupts)
                
 		priority_rotate <= 3'b111;  //  while intiializing set priority to 7 (no rotation) (init phase)
@@ -138,26 +139,33 @@ assign IRRCascade = InterruptID ;
     );
 
 
-
+// Acknowledge + Freeze + CLR IRR
 reg cnt=0 ;
 always @(posedge INTA)begin
 	
 	cnt=cnt+1;
-	if(cnt==1)
-		end_of_acknowledge_sequence=0 ;
+	if(cnt==1) begin
+	  	end_of_acknowledge_sequence=0 ;
+	  	
+	  	latch_in_service = 1;
+	end
+	
 	else if(cnt==2)begin
-		cnt=0;
-		end_of_acknowledge_sequence=1 ;
-		freeze=0;
+		 cnt=0;
+		 end_of_acknowledge_sequence=1 ;
+		 freeze=0;
 	end
 	
 end
 
+//Freeze
 always @ (negedge INTA)begin
-freeze=1;
+  freeze = 1;
+  latch_in_service = 0;
 end
 
 
+//Int Signal
 always @ (InterruptID)begin
 	if(InterruptID!=0)
 		INT=1 ;
@@ -165,6 +173,7 @@ always @ (InterruptID)begin
 		INT=0 ;
 
 end
+
 
 // Special mask
 always @(SpecialMaskModeFlag or CWregFile[4]) begin
@@ -187,7 +196,7 @@ end
 always @(*) begin
         
         if ((AEOI == 1'b1) && (end_of_acknowledge_sequence == 1'b1))
-            end_of_interrupt = acknowledge_interrupt;
+            end_of_interrupt = highest_level_in_service;
         else if (OCW2) begin
             case (internal_data_bus[6:5])
                 2'b01:   end_of_interrupt = highest_level_in_service;
@@ -220,15 +229,10 @@ end
     
     // Used to hold results after changing Bits to a Number
     reg [2:0] Non_spec_EOI_rotation = 3'b000;
-    reg [2:0] AEOI_Rotation = 3'b000;
     
     Bit_To_Num b1( 
         .source(highest_level_in_service), 
         .bit2num(Non_spec_EOI_rotation)
-    );
-    Bit_To_Num b2( 
-        .source(acknowledge_interrupt), 
-        .bit2num(AEOI_Rotation)
     );
     
     // Rotate (Determine priority rotate values)
@@ -240,7 +244,7 @@ always @(*) begin
         if ((auto_rotate_mode == 1'b1) && (end_of_acknowledge_sequence == 1'b1))
             // in Case of just finished IS4 -> acknowledge interrupt = 4 (now turned into binary)
             // then rotate by 4 steps (4 indicates 5)
-            priority_rotate <= AEOI_Rotation;
+            priority_rotate <= Non_spec_EOI_rotation;
         
         // in case of currently writing OCW2:
         else if (OCW2) begin
@@ -263,13 +267,13 @@ always @(*) begin
 end
     
     
-    // clear_interrupt_request
-always @(*) begin
-        if (latch_in_service == 1'b0)
-            clear_interrupt_request = 8'b00000000;
-        else
-            clear_interrupt_request = interrupt;
+// clear_interrupt_request
+always @(latch_in_service) begin
+      if (latch_in_service == 1'b0)
+          clear_interrupt_request = 8'b00000000;
+      else
+          clear_interrupt_request = interrupt;
 end
    
-
- endmodule
+   
+endmodule

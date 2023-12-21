@@ -40,7 +40,7 @@ module Control_Logic(
 );
 reg [7:0] CWregFile [6:0] ; //ICW .....OCW  
 reg ICW1,ICW2,ICW3,ICW4,OCW1,OCW2,OCW3 ;
-    
+reg AEOI ;
 //This Block Stores The ICWs and OCWs in our register File and sets their Flags to indicate that we stored them 
 
 always @ (FlagFromRW or ReadWriteinputData)begin
@@ -50,6 +50,7 @@ always @ (FlagFromRW or ReadWriteinputData)begin
 		interrupt_mask = 8'b11111111;
 		SP_ENCascade=0;
 		SNGL=CWregFile[0][1] ;
+		AEOI=0;
 		
 end
 	else if (FlagFromRW==1)begin
@@ -67,8 +68,16 @@ end
 	else if (FlagFromRW==3)begin
 		CWregFile[3]=ReadWriteinputData ;
 		ICW4=1;
+		
 		if(CWregFile[3][3]==1)
 			SP_ENCascade=CWregFile[3][2];
+		if(SP_ENCascade==1&& SNGL==0)//MASTER----CASCADE
+			AEOI=CWregFile[3][1];
+		else if(SP_ENCascade==0&& SNGL==0)//Slave ------ CASCADE
+			AEOI=0;
+		else if(SNGL==1) //SINGLE 
+			AEOI=CWregFile[3][1];
+		
 end
 	else if (FlagFromRW==4)begin
 		CWregFile[4]=ReadWriteinputData ;
@@ -185,3 +194,4 @@ assign IRRCascade = InterruptID ;
         else
             clear_interrupt_request = interrupt;
     end
+endmodule

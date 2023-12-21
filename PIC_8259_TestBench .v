@@ -448,3 +448,80 @@ task TASK_AUTO_EOI_TEST();
         #10;
     end
     endtask;  
+
+task TASK_INTERRUPT_MASK_TEST();
+    begin
+        #10;
+        // ICW1
+        TASK_WRITE_DATA(1'b0, 8'b00011111);
+        // ICW2
+        TASK_WRITE_DATA(1'b1, 8'b00000000);
+        // ICW4
+        TASK_WRITE_DATA(1'b1, 8'b00001101);
+        // OCW1
+        TASK_WRITE_DATA(1'b1, 8'b11111111);//MASK all Interrupts 
+        // OCW3
+        TASK_WRITE_DATA(1'b0, 8'b00001000);
+
+        // Can't interrupt
+        TASK_INTERRUPT_REQUEST(8'b11111111);
+        #10;
+
+        // OCW1
+        TASK_WRITE_DATA(1'b1, 8'b11111110);
+        // Interrupt
+        TASK_INTERRUPT_REQUEST(8'b11111111);
+        TASK_SEND_ACK_TO_8086();
+        TASK_SEND_SPECIFIC_EOI(3'b000);
+
+        // OCW1
+        TASK_WRITE_DATA(1'b1, 8'b11111101);
+        // Interrupt
+        TASK_INTERRUPT_REQUEST(8'b11111111);
+        TASK_SEND_ACK_TO_8086();
+        TASK_SEND_SPECIFIC_EOI(3'b001);
+
+        // OCW1
+        TASK_WRITE_DATA(1'b1, 8'b11111011);
+        // Interrupt
+        TASK_INTERRUPT_REQUEST(8'b11111111);
+        TASK_SEND_ACK_TO_8086();
+        TASK_SEND_SPECIFIC_EOI(3'b010);
+
+        // OCW1
+        TASK_WRITE_DATA(1'b1, 8'b11110111);
+        // Interrupt
+        TASK_INTERRUPT_REQUEST(8'b11111111);
+        TASK_SEND_ACK_TO_8086();
+        TASK_SEND_SPECIFIC_EOI(3'b011);
+
+        // OCW1
+        TASK_WRITE_DATA(1'b1, 8'b11101111);
+        // Interrupt
+        TASK_INTERRUPT_REQUEST(8'b11111111);
+        TASK_SEND_ACK_TO_8086();
+        TASK_SEND_SPECIFIC_EOI(3'b100);
+
+        // OCW1
+        TASK_WRITE_DATA(1'b1, 8'b11011111);
+        // Interrupt
+        TASK_INTERRUPT_REQUEST(8'b11111111);
+        TASK_SEND_ACK_TO_8086();
+        TASK_SEND_SPECIFIC_EOI(3'b101);
+
+        // OCW1
+        TASK_WRITE_DATA(1'b1, 8'b10111111);
+        // Interrupt
+        TASK_INTERRUPT_REQUEST(8'b11111111);
+        TASK_SEND_ACK_TO_8086();
+        TASK_SEND_SPECIFIC_EOI(3'b110);
+
+        // OCW1
+        TASK_WRITE_DATA(1'b1, 8'b01111111);
+        // Interrupt
+        TASK_INTERRUPT_REQUEST(8'b11111111);
+        TASK_SEND_ACK_TO_8086();
+        TASK_SEND_SPECIFIC_EOI(3'b111);
+        #10;
+    end
+    endtask;

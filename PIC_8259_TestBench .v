@@ -525,3 +525,47 @@ task TASK_INTERRUPT_MASK_TEST();
         #10;
     end
     endtask;
+
+task TASK_NON_SPECIFIC_EOI_TEST();
+    begin
+        #10;
+        // ICW1
+        TASK_WRITE_DATA(1'b0, 8'b00011111);
+        // ICW2
+        TASK_WRITE_DATA(1'b1, 8'b00000000);
+        // ICW4
+        TASK_WRITE_DATA(1'b1, 8'b00001101);
+        // OCW1
+        TASK_WRITE_DATA(1'b1, 8'b00000000);
+        // OCW3
+        TASK_WRITE_DATA(1'b0, 8'b00001000);
+
+        // Interrupt
+        TASK_INTERRUPT_REQUEST(8'b11111111);
+
+        TASK_SEND_ACK_TO_8086();
+        TASK_SEND_NON_SPECIFIC_EOI();
+
+        TASK_SEND_ACK_TO_8086();
+        TASK_SEND_NON_SPECIFIC_EOI();
+
+        TASK_SEND_ACK_TO_8086();
+        TASK_SEND_NON_SPECIFIC_EOI();
+
+        TASK_SEND_ACK_TO_8086();
+        TASK_SEND_NON_SPECIFIC_EOI();
+
+        TASK_SEND_ACK_TO_8086();
+        TASK_SEND_NON_SPECIFIC_EOI();
+
+        TASK_SEND_ACK_TO_8086();
+        TASK_SEND_NON_SPECIFIC_EOI();
+
+        TASK_SEND_ACK_TO_8086();
+        TASK_SEND_NON_SPECIFIC_EOI();
+
+        TASK_SEND_ACK_TO_8086();
+        TASK_SEND_NON_SPECIFIC_EOI();
+        #10;
+    end
+    endtask;

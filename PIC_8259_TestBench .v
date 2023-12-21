@@ -403,3 +403,48 @@ task TASK_READING_STATUS_TEST();
         #10;
     end
     endtask;
+
+
+task TASK_AUTO_EOI_TEST();
+    begin
+        #10;
+        // ICW1
+        TASK_WRITE_DATA(1'b0, 8'b00011111);
+        // ICW2
+        TASK_WRITE_DATA(1'b1, 8'b00000000);
+        // ICW4
+        TASK_WRITE_DATA(1'b1, 8'b00001111);
+        // OCW1
+        TASK_WRITE_DATA(1'b1, 8'b00000000);
+        // OCW3
+        TASK_WRITE_DATA(1'b0, 8'b00001000);
+
+        // Interrupt
+        TASK_INTERRUPT_REQUEST(8'b11111111);
+
+        // ACK
+        TASK_SEND_ACK_TO_8086();
+        #10;
+
+        TASK_SEND_ACK_TO_8086();
+        #10;
+
+        TASK_SEND_ACK_TO_8086();
+        #10;
+
+        TASK_SEND_ACK_TO_8086();
+        #10;
+
+        TASK_SEND_ACK_TO_8086();
+        #10;
+
+        TASK_SEND_ACK_TO_8086();
+        #10;
+
+        TASK_SEND_ACK_TO_8086();
+        #10;
+
+        TASK_SEND_ACK_TO_8086();
+        #10;
+    end
+    endtask;  

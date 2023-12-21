@@ -1,4 +1,4 @@
-module Control_Logic(   
+module Control_Logic(
 
     // Read_writeLogic***********************************************
     input wire  [7:0]   ReadWriteinputData,
@@ -32,14 +32,15 @@ module Control_Logic(
     output  reg   [7:0]   end_of_interrupt,
     output  reg   [2:0]   priority_rotate,
     output  reg           freeze,
-    output  wire           latch_in_service,//---------???????
-    output  wire   [7:0]   clear_interrupt_request
+    output  wire          latch_in_service,//---------???????
+    output  wire   [7:0]  clear_interrupt_request
     
 );
     reg [7:0] CWregFile [6:0] ; //ICW .....OCW
     reg auto_rotate_mode = 1'b0;
     reg ICW1,ICW2,ICW3,ICW4,OCW1,OCW2,OCW3 ;
-reg AEOI ;
+    reg AEOI ;
+    reg [1:0] SpecialMaskModeFlag ;
 //This Block Stores The ICWs and OCWs in our register File and sets their Flags to indicate that we stored them 
 
 always @ (FlagFromRW or ReadWriteinputData)begin
@@ -53,8 +54,10 @@ always @ (FlagFromRW or ReadWriteinputData)begin
 		interrupt_mask = 8'b11111111;
                 end_of_interrupt = 8'b11111111;
                 clear_interrupt_request = 8'b11111111;
-        
-                priority_rotate <= 3'b111;  //  while intiializing set priority to 7 (no rotation) (init phase)
+        	interrupt_special_mask <= 8'b00000000;   // due to functionality of interrupt_special_mask it should initially start with zeros
+        						 // as it's different from interrupt mask (temporarily change enabled/disabled interrupts)
+               
+		priority_rotate <= 3'b111;  //  while intiializing set priority to 7 (no rotation) (init phase)
                 auto_rotate_mode = 1'b0;    //  while intiializing deactivate rotate mode (init phase)
 		
 end
@@ -96,6 +99,8 @@ end
 	else if (FlagFromRW==6)begin
 		CWregFile[6]=ReadWriteinputData ;
 		OCW3=1 ;
+		SpecialMaskModeFlag=CWregFile[6][6:5] ;
+		
 end
 				
     end
@@ -145,6 +150,7 @@ always @(posedge INTA)begin
 	end
 	
 end
+
 always @ (negedge INTA)begin
 freeze=1;
 end
@@ -159,32 +165,23 @@ always @ (InterruptID)begin
 end
 
 // Special mask
-always @(*) begin
+always @(SpecialMaskModeFlag or CWregFile[4]) begin
         
-        // due to functionality of interrupt_special_mask it should initially start with zeros
-        // as it's different from interrupt mask (temporarily change enabled/disabled interrupts)
-        if (reset)
-            interrupt_special_mask <= 8'b00000000;
-        
-        // in case of still writing on ICW1 set interrupt special mask to initial state
-        else if (write_initial_command_word_1 == 1'b1)
-            interrupt_special_mask <= 8'b00000000;
-        
-        // special mask mode is diabled
-        else if (special_mask_mode == 1'b0)
+        // special mask mode is disabled
+        if (SpecialMaskModeFlag == 2'b10)
             interrupt_special_mask <= 8'b00000000;
        
         // in case of writing on OCW1 while special mask mode is enabled -> put data on data line 
         // into interrupt special mask reg
-        else if ((write_operation_control_word_1_registers  == 1'b1) && (special_mask_mode == 1'b1))
-            interrupt_special_mask <= internal_data_bus;
+        else if ((OCW1 == 1'b1) && (SpecialMaskModeFlag == 2'b11))
+            interrupt_special_mask <= CWregFile[4];
         
         else
             interrupt_special_mask <= interrupt_special_mask;
 end
     
     
-    // End of interrupt
+// End of interrupt
 always @(*) begin
         
         if ((AEOI == 1'b1) && (end_of_acknowledge_sequence == 1'b1))

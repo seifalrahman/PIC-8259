@@ -30,15 +30,15 @@ PIC_8259A pic (
 task TASK_INIT;
 begin
     #10 ;
-    CAS           = 1'b1;
-    read_enable_n           = 1'b1;
-    write_enable_n          = 1'b1;
-    address                 = 1'b0;
-    data_bus_in             = 8'b00000000;
-    cascade_in              = 3'b000;
-    slave_program_n         = 1'b0;
-    interrupt_acknowledge_n = 1'b1;
-    interrupt_request       = 8'b00000000;
+    CAS                     = 1'b1;
+    read_enable             = 1'b1;
+    write_enable            = 1'b1;
+    A0                      = 1'b0;
+    data_bus                = 8'b00000000;
+    CAS                     = 3'b000;
+    SP_EN                   = 1'b0;
+    INTA                    = 1'b1;
+    IRR                     = 8'b00000000;
     
 end
 endtask
@@ -46,22 +46,23 @@ endtask
 
 // Task : Write data
 task TASK_WRITE_DATA;
-  input [7:0] addr;
+  input  addr;
   input [7:0] data;
 begin
     #10; // Assuming no delay for this step
     CAS   = 1'b0;
-    write_enable_n  = 1'b0;
-    address         = addr;
-    data_bus_in     = data;
+    write_enable  = 1'b0;
+    A0         = addr;
+    data_bus     = data;
     #10; // Assuming a delay of 1 time unit
     CAS   = 1'b1;
-    write_enable_n  = 1'b1;
-    address         = 1'b0;
-    data_bus_in     = 8'b00000000;
+    write_enable  = 1'b1;
+    A0         = 1'b0;
+    data_bus     = 8'b00000000;
     #10; // Assuming a delay of 1 time unit
 end
 endtask
+
 
 
 

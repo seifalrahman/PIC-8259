@@ -117,21 +117,40 @@ end
 assign IRRCascade = InterruptID ;
 
 
+//register to hold result of Num_To_Bit(value data bus) in case of specific EOI
+    reg [7:0] Specific_EOI = 8'b00000000;
     
-  // Auto rotate mode
-    always @(*) begin
-        if (reset)
-            auto_rotate_mode <= 1'b0;
-            
-        //  while intiializing deactivate rotate mode (init phase)
-        else if (write_initial_command_word_1 == 1'b1)
-            auto_rotate_mode <= 1'b0;
+    Num_To_Bit n1(
+        .source(internal_data_bus[2:0]),
+        .num2bit(Specific_EOI)
+    );
+    
         
+    
+    // End of interrupt
+    always @(*) begin
+        
+        if ((AEOI == 1'b1) && (end_of_acknowledge_sequence == 1'b1))
+            end_of_interrupt = acknowledge_interrupt;
+        else if (OCW2) begin
+            case (internal_data_bus[6:5])
+                2'b01:   end_of_interrupt = highest_level_in_service;
+                2'b11:   end_of_interrupt = Specific_EOI;
+                default: end_of_interrupt = 8'b00000000;
+            endcase
+        end
+        else
+            end_of_interrupt = 8'b00000000;
+    end
+    
+    
+    // Auto rotate mode
+    always @(*) begin
         // in case of OCW2 (where it's initialized) if R bit is set -> rotate mode
-        else if (write_operation_control_word_2 == 1'b1) begin
-            casez (internal_data_bus[7:5])
-                3'b000:  auto_rotate_mode <= 1'b0;  // disable auto rotate mode
-                3'b100:  auto_rotate_mode <= 1'b1;  // enable  auto rotate mode
+        if (OCW2 == 1'b1 && AEOI== 1'b1) begin
+            case(internal_data_bus[7:5])
+                3'b000:  auto_rotate_mode <= 1'b0;  // disable auto rotate mode (AEOI)
+                3'b100:  auto_rotate_mode <= 1'b1;  // enable  auto rotate mode (AEOI)
                 default: auto_rotate_mode <= auto_rotate_mode;
             endcase
         end
@@ -140,42 +159,46 @@ assign IRRCascade = InterruptID ;
     end
 
 
-
-
     // Rotate (Determine priority rotate values)
     // which is used in Priority Resolver
     
-    // 0 indicates 1 rotation
-    // 2 indicated 3 rotations
-    // 6 indicates 7 rotations
-    // 7 indicates no rotation
+    // Used to hold results after changing Bits to a Number
+    reg [2:0] Non_spec_EOI_rotation = 3'b000;
+    reg [2:0] AEOI_Rotation = 3'b000;
+    
+    Bit_To_Num b1( 
+        .source(highest_level_in_service), 
+        .bit2num(Non_spec_EOI_rotation)
+    );
+    Bit_To_Num b2( 
+        .source(acknowledge_interrupt), 
+        .bit2num(AEOI_Rotation)
+    );
+    
+    // Rotate (Determine priority rotate values)
+    // which is used in Priority Resolver
     always @(*) begin
-        if (reset)
-            priority_rotate <= 3'b111;
-            
-        //  while intiializing set priority to 7 (no rotation) (init phase)
-        else if (write_initial_command_word_1 == 1'b1)
-            priority_rotate <= 3'b111;
-        
-        // in case of auto rotate mode enabled , and an EOI is received then 
+
+        // in case of (AEOI mode only) auto rotate mode enabled , and an AEOI is received then 
         // rotate priorities (checking R bit + EOI are set or not)
-        else if ((auto_rotate_mode == 1'b1) && (end_of_acknowledge_sequence == 1'b1))
+        if ((auto_rotate_mode == 1'b1) && (end_of_acknowledge_sequence == 1'b1))
             // in Case of just finished IS4 -> acknowledge interrupt = 4 (now turned into binary)
             // then rotate by 4 steps (4 indicates 5)
-            priority_rotate <= bit2num(acknowledge_interrupt);
+            priority_rotate <= AEOI_Rotation;
         
         // in case of currently writing OCW2:
-        else if (write_operation_control_word_2 == 1'b1) begin
+        else if (OCW2) begin
             //check R , SL , EOI bits
-            casez (internal_data_bus[7:5])
+            case (internal_data_bus[7:5])
                 // 101 -> rotate on non specific EOI
                 // sends EOI to show that interrupt is finished
                 // now need to have the info about the interrupt that just finished (highest_level_in_service)
                 // so that we clear the ISR correctly and rotate for the next interrupt 
-                3'b101:  priority_rotate <= bit2num(highest_level_in_service);  // non specific EOI -> highest_level_in_service
+                3'b101:  priority_rotate <= Non_spec_EOI_rotation;  // non specific EOI -> clear highest_level_in_service
                 
-                // Take priority from L2~L0 ( in case of specific rotation )
-                3'b11x:  priority_rotate <= internal_data_bus[2:0];
+                // Take priority rotation from L2~L0 ( in case of specific rotation )
+                3'b110:  priority_rotate <= internal_data_bus[2:0];
+                3'b111:  priority_rotate <= internal_data_bus[2:0];
                 default: priority_rotate <= priority_rotate;
             endcase
         end
@@ -184,14 +207,12 @@ assign IRRCascade = InterruptID ;
     end
     
     
-    
     // clear_interrupt_request
     always @(*) begin
-        if (write_initial_command_word_1 == 1'b1)
-            clear_interrupt_request = 8'b11111111;
-        else if (latch_in_service == 1'b0)
+        if (latch_in_service == 1'b0)
             clear_interrupt_request = 8'b00000000;
         else
             clear_interrupt_request = interrupt;
     end
+    
 endmodule

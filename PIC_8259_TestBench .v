@@ -232,3 +232,35 @@ task TASK_8086_NORMAL_INTERRUPT_TEST();
         #10;
     end
     endtask;
+
+	task TASK_NON_SPECTAL_FULLY_NESTED_TEST();
+    begin
+        #10;
+        // ICW1
+        TASK_WRITE_DATA(1'b0, 8'b00011111);
+        // ICW2
+        TASK_WRITE_DATA(1'b1, 8'b00000000);
+        // ICW4
+        TASK_WRITE_DATA(1'b1, 8'b00001101);
+        // OCW1
+        TASK_WRITE_DATA(1'b1, 8'b00000000);
+        // OCW3
+        TASK_WRITE_DATA(1'b0, 8'b00001000);
+
+        // Interrupt
+        TASK_INTERRUPT_REQUEST(8'b00010000);    // 4<------------		|
+        TASK_SEND_ACK_TO_8086();//				|
+        #10;//							|
+        TASK_INTERRUPT_REQUEST(8'b00100000);    // 5		|
+        TASK_INTERRUPT_REQUEST(8'b00010000);    // 4		|
+        TASK_INTERRUPT_REQUEST(8'b00001000);    // 3		|
+        TASK_SEND_ACK_TO_8086();	//			|
+        TASK_SEND_SPECIFIC_EOI(3'b011); //                      |
+        TASK_SEND_SPECIFIC_EOI(3'b100);//first one--------------
+        TASK_SEND_ACK_TO_8086();//for the second one 
+        TASK_SEND_SPECIFIC_EOI(3'b100);//for the second one 
+        TASK_SEND_ACK_TO_8086();//5
+        TASK_SEND_SPECIFIC_EOI(3'b101);//5
+        #10;
+    end
+    endtask;

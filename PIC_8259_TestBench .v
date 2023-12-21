@@ -84,12 +84,12 @@ task TASK_READ_DATA;
   input [7:0] addr;
 begin
     #10; // Assuming no delay for this step
-    chip_select_n   = 1'b0;
-    read_enable_n   = 1'b0;
-    address         = addr;
+    chip_select   = 1'b0;
+    read_enable   = 1'b0;
+    address         = A0;
     #10; // Assuming a delay of 1 time unit
-    chip_select_n   = 1'b1;
-    read_enable_n   = 1'b1;
+    chip_select   = 1'b1;
+    read_enable   = 1'b1;
     #10; // Assuming a delay of 1 time unit
 end
 endtask
@@ -99,9 +99,9 @@ task TASK_INTERRUPT_REQUEST;
   input [7:0] request;
 begin
     #10; // Assuming no delay for this step
-    interrupt_request = request;
+    IRR = request;
     #10; // Assuming a delay of 1 time unit
-    interrupt_request = 8'b00000000;
+    IRR = 8'b00000000;
 end
 endtask
 

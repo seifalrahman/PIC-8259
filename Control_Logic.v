@@ -38,7 +38,8 @@ module Control_Logic(
     output  logic   [7:0]   clear_interrupt_request
     
 );
-reg [7:0] CWregFile [6:0] ; //ICW .....OCW  
+reg [7:0] CWregFile [6:0] ; //ICW .....OCW
+reg auto_rotate_mode = 1'b0;
 reg ICW1,ICW2,ICW3,ICW4,OCW1,OCW2,OCW3 ;
 reg AEOI ;
 //This Block Stores The ICWs and OCWs in our register File and sets their Flags to indicate that we stored them 

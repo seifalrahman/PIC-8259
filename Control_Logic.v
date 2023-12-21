@@ -24,6 +24,9 @@ module Control_Logic(
     output reg [7:0] ICW2Cascade ,
     output reg SNGL ,
     output wire [7:0] IRRCascade  ,
+    //***************************************************************
+    //Priority Resolver *********************************************
+    input wire [7:0] InterruptID ,  // it has only one bit set
     //***************************************************************	 
     // Interrupt control signals
     output  reg   [7:0]   interrupt_mask,//IMR
@@ -102,7 +105,7 @@ end
 
 end
 
-assign IRRCascade =IRRinput ;
+assign IRRCascade = InterruptID ;
 
 
     

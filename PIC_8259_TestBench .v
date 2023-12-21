@@ -4,7 +4,7 @@ module PIC_8259_TestBench (
     				input   wire            read_enable,
   				input   wire            write_enable,
    				input   wire            A0,
-    				inout   wire   [7:0]    data_bus_in,
+    				inout   wire   [7:0]    data_bus,
     				inout   wire   [2:0]   	  CAS,
     				inout                     SP_EN,
     				input   wire           	  INTA,
@@ -129,34 +129,34 @@ endtask
 
 task TASK_SEND_ACK_TO_8086;
 begin
-    interrupt_acknowledge_n = 1'b1;
+    INTA = 1'b1;
     #1;
-    interrupt_acknowledge_n = 1'b0;
+    INTA = 1'b0;
     #1;
-    interrupt_acknowledge_n = 1'b1;
+    INTA = 1'b1;
     #1;
-    interrupt_acknowledge_n = 1'b0;
+    INTA = 1'b0;
     #1;
-    interrupt_acknowledge_n = 1'b1;
+    INTA = 1'b1;
 end
 endtask;
 
 task TASK_SEND_ACK_TO_8086_SLAVE;
   input [2:0] slave_id;
 begin
-    interrupt_acknowledge_n = 1'b1;
-    cascade_in = 3'b000;
+    INTA = 1'b1;
+    CAS = 3'b000;
     #1;
-    interrupt_acknowledge_n = 1'b0;
+    INTA = 1'b0;
     #0.5;
-    cascade_in = slave_id;
+    CAS = slave_id;
     #0.5;
-    interrupt_acknowledge_n = 1'b1;
+    INTA = 1'b1;
     #1;
-    interrupt_acknowledge_n = 1'b0;
+    INTA = 1'b0;
     #1;
-    interrupt_acknowledge_n = 1'b1;
-    cascade_in = 3'b000;
+    INTA = 1'b1;
+    CAS = 3'b000;
 end
 endtask;
 

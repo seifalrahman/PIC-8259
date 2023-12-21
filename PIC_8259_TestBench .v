@@ -264,3 +264,142 @@ task TASK_8086_NORMAL_INTERRUPT_TEST();
         #10;
     end
     endtask;
+
+task TASK_READING_STATUS_TEST();
+    begin
+        #10;
+        // ICW1
+        TASK_WRITE_DATA(1'b0, 8'b00011111);
+        // ICW2
+        TASK_WRITE_DATA(1'b1, 8'b00000000);
+        // ICW4
+        TASK_WRITE_DATA(1'b1, 8'b00000001);
+        // OCW1
+        TASK_WRITE_DATA(1'b1, 8'b00000000);
+        // OCW3
+        TASK_WRITE_DATA(1'b0, 8'b00001000);
+
+        
+        // OCW3
+        TASK_WRITE_DATA(1'b0, 8'b00001010);
+        TASK_READ_DATA(1'b0);//IRR will be sent 
+
+        TASK_INTERRUPT_REQUEST(8'b00000001);
+        TASK_SEND_ACK_TO_8086();
+        #10;
+
+        TASK_INTERRUPT_REQUEST(8'b00000001);
+        TASK_READ_DATA(1'b0);//IRR will be sent 
+
+        TASK_INTERRUPT_REQUEST(8'b00000010);
+        TASK_READ_DATA(1'b0);//IRR will be sent 
+
+        TASK_INTERRUPT_REQUEST(8'b00000100);
+        TASK_READ_DATA(1'b0);//IRR will be sent 
+
+        TASK_INTERRUPT_REQUEST(8'b00001000);
+        TASK_READ_DATA(1'b0);//IRR will be sent 
+
+        TASK_INTERRUPT_REQUEST(8'b00010000);
+        TASK_READ_DATA(1'b0);//IRR will be sent 
+
+        TASK_INTERRUPT_REQUEST(8'b00100000);
+        TASK_READ_DATA(1'b0);//IRR will be sent 
+
+        TASK_INTERRUPT_REQUEST(8'b01000000);
+        TASK_READ_DATA(1'b0);//IRR will be sent 
+
+        TASK_INTERRUPT_REQUEST(8'b10000000);
+        TASK_READ_DATA(1'b0);//IRR will be sent 
+
+        
+        TASK_WRITE_DATA(1'b0, 8'b00001011);
+
+        TASK_READ_DATA(1'b0);//ISR will be sent
+
+        TASK_SEND_NON_SPECIFIC_EOI();
+        TASK_SEND_ACK_TO_8086();
+        #10;
+        TASK_READ_DATA(1'b0);//ISR will be sent
+
+        TASK_SEND_NON_SPECIFIC_EOI();
+        TASK_SEND_ACK_TO_8086();
+        #10;
+        TASK_READ_DATA(1'b0);//ISR will be sent
+
+        TASK_SEND_NON_SPECIFIC_EOI();
+        TASK_SEND_ACK_TO_8086();
+        #10;
+        TASK_READ_DATA(1'b0);//ISR will be sent
+
+        TASK_SEND_NON_SPECIFIC_EOI();
+        TASK_SEND_ACK_TO_8086();
+        #10;
+        TASK_READ_DATA(1'b0);//ISR will be sent
+
+        TASK_SEND_NON_SPECIFIC_EOI();
+        TASK_SEND_ACK_TO_8086();
+        #10;
+        TASK_READ_DATA(1'b0);//ISR will be sent
+
+        TASK_SEND_NON_SPECIFIC_EOI();
+        TASK_SEND_ACK_TO_8086();
+        #10;
+        TASK_READ_DATA(1'b0);//ISR will be sent
+
+        TASK_SEND_NON_SPECIFIC_EOI();
+        TASK_SEND_ACK_TO_8086();
+        #10;
+        TASK_READ_DATA(1'b0);//ISR will be sent
+
+        TASK_SEND_NON_SPECIFIC_EOI();
+        TASK_SEND_ACK_TO_8086();
+        #10;
+        TASK_READ_DATA(1'b0);//ISR will be sent
+
+        TASK_SEND_NON_SPECIFIC_EOI();
+        TASK_READ_DATA(1'b0);//ISR will be sent
+
+        
+        // OCW1
+        TASK_WRITE_DATA(1'b1, 8'b00000000);
+        TASK_READ_DATA(1'b1);//IMR will be sent
+
+        // OCW1
+        TASK_WRITE_DATA(1'b1, 8'b00000001);
+        TASK_READ_DATA(1'b1);//IMR will be sent
+
+        // OCW1
+        TASK_WRITE_DATA(1'b1, 8'b00000010);
+        TASK_READ_DATA(1'b1);//IMR will be sent
+
+        // OCW1
+        TASK_WRITE_DATA(1'b1, 8'b00000100);
+        TASK_READ_DATA(1'b1);//IMR will be sent
+
+        // OCW1
+        TASK_WRITE_DATA(1'b1, 8'b00001000);
+        TASK_READ_DATA(1'b1);//IMR will be sent
+
+        // OCW1
+        TASK_WRITE_DATA(1'b1, 8'b00010000);
+        TASK_READ_DATA(1'b1);//IMR will be sent
+
+        // OCW1
+        TASK_WRITE_DATA(1'b1, 8'b00100000);
+        TASK_READ_DATA(1'b1);//IMR will be sent
+
+        // OCW1
+        TASK_WRITE_DATA(1'b1, 8'b01000000);
+        TASK_READ_DATA(1'b1);//IMR will be sent
+
+        // OCW1
+        TASK_WRITE_DATA(1'b1, 8'b10000000);
+        TASK_READ_DATA(1'b1);//IMR will be sent
+
+        // OCW1
+        TASK_WRITE_DATA(1'b1, 8'b00000000);
+
+        #10;
+    end
+    endtask;

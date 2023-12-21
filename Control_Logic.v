@@ -2,73 +2,109 @@ module Control_Logic(
 
   //  REMOVE ALL RESETS -------------------------------------------------------------------------------
   // REMEMBER THE FUNCTIONS ------------------------------------------------------------------------------
-    // Internal bus
-    input   logic   [7:0]   internal_data_bus,
-    input   logic           write_initial_command_word_1,
-    input   logic           write_initial_command_word_2_4,
-    input   logic           write_operation_control_word_1,
-    input   logic           write_operation_control_word_2,
-    input   logic           write_operation_control_word_3,
-  
+    
+
+    // Read_writeLogic***********************************************
+    input wire  [7:0]   ReadWriteinputData,
+    input wire  [2:0]   FlagFromRW ,
+    input wire  [2:0]   read2controlRW,
+    //***************************************************************
+    //Data Buffer ***************************************************
+    output reg [7:0]  DataBufferOutput ,
+    //***************************************************************
+    //IRR************************************************************
+    input wire [7:0]  IRRinput ,
+    //***************************************************************
+    //ISR************************************************************
+    input wire [7:0]  ISRinput ,
+    //***************************************************************
+    //CASCADEMODULE**************************************************
+    output reg SP_ENCascade ,
+    output reg [7:0] ICW3Cascade ,
+    output reg [7:0] ICW2Cascade ,
+    output reg SNGL ,
+    output wire [7:0] IRRCascade  ,
+    //***************************************************************	 
     // Interrupt control signals
-    output  logic   [7:0]   interrupt_mask,
-    output  logic   [7:0]   interrupt_special_mask,
+    output  reg   [7:0]   interrupt_mask,//IMR
+    output  logic   [7:0]   interrupt_special_mask,//---------??????
     output  logic   [7:0]   end_of_interrupt,
     output  logic   [2:0]   priority_rotate,
     output  logic           freeze,
-    output  logic           latch_in_service,
+    output  logic           latch_in_service,//---------???????
     output  logic   [7:0]   clear_interrupt_request
     
 );
-  
-  
-    // Operation control word 1 
-    // IMR
-    always @(*) begin
-        
-        //in case of reset disable all interrupts (to re-init)
-        // RECALL THERE IS NO RESET (MUST INIT interrupt_mask to 111111111111)
-        if (reset)
-            interrupt_mask <= 8'b11111111;
-            
-        // in case of still writing on ICW1 disable all interrupts (init phase)
-        else if (write_initial_command_word_1 == 1'b1)
-            interrupt_mask <= 8'b11111111;
-        
-        // in case of writing on OCW1 and special mask = 0 then put data on data line into IMR
-        else if ((write_operation_control_word_1_registers == 1'b1) && (special_mask_mode == 1'b0))
-            interrupt_mask <= internal_data_bus;
-        
-        else
-            interrupt_mask <= interrupt_mask;
+reg [7:0] CWregFile [6:0] ; //ICW .....OCW  
+reg ICW1,ICW2,ICW3,ICW4,OCW1,OCW2,OCW3 ;
+    
+//This Block Stores The ICWs and OCWs in our register File and sets their Flags to indicate that we stored them 
+
+always @ (FlagFromRW or ReadWriteinputData)begin
+	if(FlagFromRW==0)begin
+		CWregFile[0]=ReadWriteinputData ;
+		ICW1=1;
+		interrupt_mask = 8'b11111111;
+		SP_ENCascade=0;
+		SNGL=CWregFile[0][1] ;
+		
+end
+	else if (FlagFromRW==1)begin
+		CWregFile[1]=ReadWriteinputData ;
+		ICW2=1;
+		ICW2Cascade=CWregFile[1] ;
+		
+end
+	else if (FlagFromRW==2)begin
+		CWregFile[2]=ReadWriteinputData ;
+		ICW3=1;
+	        ICW3Cascade=CWregFile[1] ;
+		
+end
+	else if (FlagFromRW==3)begin
+		CWregFile[3]=ReadWriteinputData ;
+		ICW4=1;
+		if(CWregFile[3][3]==1)
+			SP_ENCascade=CWregFile[3][2];
+end
+	else if (FlagFromRW==4)begin
+		CWregFile[4]=ReadWriteinputData ;
+		OCW1=1;
+		interrupt_mask=ReadWriteinputData ;
+end
+	else if (FlagFromRW==5)begin
+		CWregFile[5]=ReadWriteinputData ;
+		OCW2=1 ;
+end
+	else if (FlagFromRW==6)begin
+		CWregFile[6]=ReadWriteinputData ;
+		OCW3=1 ;
+end
+				
     end
 
-    // Special mask
-    always @(*) begin
-        
-        // due to functionality of interrupt_special_mask it should initially start with zeros
-        // as it's different from interrupt mask (temporarily change enabled/disabled interrupts)
-        if (reset)
-            interrupt_special_mask <= 8'b00000000;
-        
-        // in case of still writing on ICW1 set interrupt special mask to initial state
-        else if (write_initial_command_word_1 == 1'b1)
-            interrupt_special_mask <= 8'b00000000;
-        
-        // special mask mode is diabled
-        else if (special_mask_mode == 1'b0)
-            interrupt_special_mask <= 8'b00000000;
-       
-        // in case of writing on OCW1 while special mask mode is enabled -> put data on data line 
-        // into interrupt special mask reg
-        else if ((write_operation_control_word_1_registers  == 1'b1) && (special_mask_mode == 1'b1))
-            interrupt_special_mask <= internal_data_bus;
-        
-        else
-            interrupt_special_mask <= interrupt_special_mask;
-    end
-    
-    
+
+// WRITE IMR-------ISR-----IRR onto the data buffer
+always @ (read2controlRW)begin
+if(read2controlRW==3'b011)begin//IMR
+	DataBufferOutput=CWregFile[4] ;
+end
+else if (read2controlRW==3'b001)begin  //IRR
+	DataBufferOutput=IRRinput ;
+	
+end
+else if (read2controlRW==3'b101)begin  //ISR
+        DataBufferOutput=ISRinput ;
+end
+else if (read2controlRW==3'b111)begin  //IRR
+        DataBufferOutput=IRRinput ;
+end
+
+end
+
+assign IRRCascade =IRRinput ;
+
+
     
   // Auto rotate mode
     always @(*) begin

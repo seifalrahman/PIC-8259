@@ -13,7 +13,7 @@ module In_Service(
   
   );
   
-    reg    [7:0]   next_highest_level_in_service;
+    wire    [7:0]   next_highest_level_in_service_wire1;
     
   //
   // In service register
@@ -34,16 +34,18 @@ module In_Service(
       .rotate(priority_rotate),
       .rotated_L_output(next_highest_level_in_service)
   );  
-  
+
+
+assign next_highest_level_in_service_wire1 = in_service_register & ~interrupt_special_mask;
+
+wire [7:0] next_highest_level_in_service_wire2;
+  resolve_priority RP(
+    .source(next_highest_level_in_service_wire1),
+    .resolved_priority(next_highest_level_in_service_wire2)
+  );
+
   always @(*) begin
-      next_highest_level_in_service = in_service_register & ~interrupt_special_mask;
-
-      next_highest_level_in_service = resolv_priority(next_highest_level_in_service);
-
-  end
-
-  always @(*) begin
-          highest_level_in_service <= next_highest_level_in_service;
+          highest_level_in_service <= next_highest_level_in_service_wire2;
   end
 
 endmodule

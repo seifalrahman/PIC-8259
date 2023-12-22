@@ -192,8 +192,7 @@ end
   
     
 //register to hold result of Num_To_Bit(value data bus) in case of specific EOI
-reg [7:0] Specific_EOI = 8'b00000000;
-    
+wire [7:0] Specific_EOI = 8'b00000000;    
 Num_To_Bit n1(
      .source(CWregFile[5][2:0]),
      .num2bit(Specific_EOI)
@@ -235,7 +234,7 @@ end
     // which is used in Priority Resolver
     
     // Used to hold results after changing Bits to a Number
-    reg [2:0] Non_spec_EOI_rotation = 3'b000;
+    wire [2:0] Non_spec_EOI_rotation = 3'b000;
     
     Bit_To_Num b1( 
         .source(highest_level_in_service), 

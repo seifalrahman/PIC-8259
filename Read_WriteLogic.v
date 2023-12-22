@@ -1,7 +1,7 @@
 module Read_WriteLogic (
 			input wire RD,WR,A0,CS,[7:0]inputRegister,
                         output reg [7:0] control_output_Register,
-                        output reg [2:0]Flag,
+                        output reg [2:0]Flag,	
                         output reg [2:0]read2control 
 			);
 

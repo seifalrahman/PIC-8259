@@ -62,3 +62,91 @@ To address these issues, we should:
 - Remove unused code and modules to clean up the design.
 
 Due to the complexity of the project and the number of issues, we decided to tackle each module separately, write testbenches for each one, and ensure they work as expected before integrating them into the top-level module.
+
+### some guidence we thought about to track these issues
+
+1. **Cascademodule**:
+   - Use non-blocking assignments (`<=`) for sequential logic.
+   - Reset `flagCodeAddress` in a reset condition.
+   - Make sure the sensitivity list of always blocks includes all signals that affect the logic.
+
+```verilog
+always @(posedge INTA or negedge INTA) begin
+    if (!INTA) begin
+        flagCodeAddress <= 0;
+    end else begin
+        cnt <= cnt + 1;
+        // Rest of the logic...
+    end
+end
+```
+
+2. **Control_Logic Module**:
+   - Use non-blocking assignments for sequential logic.
+   - Use a case statement for better readability.
+
+```verilog
+always @(posedge INTA or negedge INTA) begin
+    if (!INTA) begin
+        // Logic for negedge INTA
+    end else begin
+        // Logic for posedge INTA
+    end
+end
+
+always @(*) begin
+    case (FlagFromRW)
+        0: begin
+            // Logic for ICW1
+        end
+        1: begin
+            // Logic for ICW2
+        end
+        // Other cases...
+    endcase
+end
+```
+
+3. **DataBuffer Module**:
+   - Use non-blocking assignments for sequential logic.
+   - Avoid driving the same signal from multiple procedural blocks.
+
+```verilog
+always @(*) begin
+    if (R == 0 && W == 1) begin
+        buffer <= InternalD;
+    end else if (R == 1 && W == 0) begin
+        buffer <= Data;
+    end
+end
+
+assign Data = (R == 0 && W == 1) ? buffer : 8'bz;
+assign InternalD = (R == 1 && W == 0) ? buffer : 8'bz;
+```
+
+4. **Interrupt_Request Module**:
+   - Use non-blocking assignments for sequential logic.
+
+```verilog
+always @(*) begin
+    for (int i = 0; i < 8; i++) begin
+        if (clear_interrupt_req[i]) begin
+            interrupt_req_register[i] <= 1'b0;
+        end else if (!freeze && interrupt_req_pin[i]) begin
+            interrupt_req_register[i] <= 1'b1;
+        end
+    end
+end
+```
+
+5. **Priority_Resolver Module**:
+   - Use non-blocking assignments for sequential logic.
+   - Connect instantiated modules properly.
+
+```verilog
+always @(*) begin
+    masked_interrupt_req <= interrupt_request_register & ~interrupt_mask;
+    masked_in_service <= in_service_register & ~interrupt_special_mask;
+    // Rest of the logic...
+end
+```

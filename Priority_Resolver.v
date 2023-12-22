@@ -24,7 +24,7 @@ module Priority_Resolver(
     
     reg   [7:0]   masked_interrupt_req,masked_in_service;
         
-    always @* begin
+    always @(*) begin
       //check masking
       masked_interrupt_req = interrupt_request_register & ~interrupt_mask;
       //check masking in case of special masking
@@ -40,7 +40,7 @@ module Priority_Resolver(
     
     // rotate register (after checking masking)
     rotate_right rotate_R1(
-      .source(masked_interrupt_request),
+      .source(masked_interrupt_req),
       .rotate(priority_rotate),
       .rotated_R_output(rotated_request)
     );
@@ -68,15 +68,21 @@ module Priority_Resolver(
         else                                    priority_mask = 8'b11111111;
     end
     
-    wire resolved_priority;
+    wire [7:0] resolved_priority;
     
     
     resolve_priority res_pri(
       .source(rotated_request),
       .resolved_priority(resolved_priority)
     );
+    
 wire [7:0] interrupt_wire;
-assign interrupt_wire = interrupt;  
+
+
+always @(*) begin
+       interrupt = interrupt_wire;  
+end
+
     
     // rotate the result back into its rightful position as each device 
     // has its ISR at a certain unchanged location marked by its initial location
@@ -87,7 +93,7 @@ assign interrupt_wire = interrupt;
     );    
     // interrupt goes to the control unit which enables the INT pin as a result
     
-    always @* begin
+    always @(*) begin
        // resolve priority then and with mask(which allows only higher priorities in case of currently executing an interrupt)
        rotated_interrupt = resolved_priority & priority_mask;
     end

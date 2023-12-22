@@ -33,8 +33,8 @@ module Priority_Resolver(
     
   
     // Resolve priority 
-    reg    [7:0]   rotated_in_service , priority_mask , rotated_interrupt;
-    wire   [7:0]   rotated_request;
+    reg    [7:0]    priority_mask , rotated_interrupt;
+    wire   [7:0]   rotated_in_service , rotated_request;
     //wire   [7:0]   rotated_highest_level_in_service
     
     
@@ -56,7 +56,7 @@ module Priority_Resolver(
     
 
     //disable interrupts of lower priority while allowing all interrupts of higher priority    
-    always begin
+    always@(*) begin
         if      (rotated_in_service[0] == 1'b1) priority_mask = 8'b00000000;
         else if (rotated_in_service[1] == 1'b1) priority_mask = 8'b00000001;
         else if (rotated_in_service[2] == 1'b1) priority_mask = 8'b00000011;
@@ -68,21 +68,22 @@ module Priority_Resolver(
         else                                    priority_mask = 8'b11111111;
     end
     
-    reg resolved_priority;
+    wire resolved_priority;
     
     
     resolve_priority res_pri(
       .source(rotated_request),
       .resolved_priority(resolved_priority)
     );
-    
+wire [7:0] interrupt_wire;
+assign interrupt_wire = interrupt;  
     
     // rotate the result back into its rightful position as each device 
     // has its ISR at a certain unchanged location marked by its initial location
     rotate_left rotate_L1(
       .source(rotated_interrupt),
       .rotate(priority_rotate),
-      .rotated_L_output(interrupt)
+      .rotated_L_output(interrupt_wire)
     );    
     // interrupt goes to the control unit which enables the INT pin as a result
     

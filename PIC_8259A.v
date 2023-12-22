@@ -17,10 +17,10 @@ wire [7:0] InternalData;
 wire Flag_From_Cascade;
 
 DataBuffer DataBusBuffer(
-	.Data(D)				          ,
-	.InternalD(InternalData)		          ,
-	.R(RD_n)				          ,
-	.W(WR_n)				          ,
+	.Data(D)				,
+	.InternalD(InternalData)		,
+	.R(RD_n)				,
+	.W(WR_n)				,
 	.Flag_From_Cascade(Flag_From_Cascade)
 	);
 
@@ -33,11 +33,11 @@ wire [2:0] R_Flag_2Control;//flag to identifi read register
 Read_WriteLogic ReadWriteLogic(
 	.RD(RD_n)					,
 	.WR(WR_n)					,
-	.A0(A0)					,
+	.A0(A0)						,
 	.CS(CS_n)					,
 	.inputRegister(InternalData)			,
 	.control_output_Register(W_Data_2Control)	,
-	.Flag(W_Flag_2Control)			,
+	.Flag(W_Flag_2Control)				,
 	.read2control(R_Flag_2Control)					
 	);
 
@@ -51,12 +51,12 @@ wire SNGL;//to check singlr or cascade mode
  
 Cascademodule Cascade_Buffer_Comparator(
 	.CAS(CAS)					,
-	.SP_EN(SP_ENCascade)			,
+	.SP_EN(SP_ENCascade)				,
 	.ICW3(ICW3Cascade)				,
 	.IRR(IRRCascade)				,
 	.ICW2(ICW2Cascade)				,	
-	.SNGL(SNGL)				,
-	.INTA(INTA_n)				,
+	.SNGL(SNGL)					,
+	.INTA(INTA_n)					,
 	.codeAddress(InternalData)			,
 	.flagCodeAddress(Flag_From_Cascade)
 	);
@@ -72,9 +72,9 @@ wire [7:0] IRQs_2Pri_Resolver;
 
 Interrupt_Request IRR(
 	.edge_level_config(edge_level_config)		,
-	.freeze(freeze)				,
+	.freeze(freeze)					,
 	.clear_interrupt_req(clear_interrupt_request)	,
-	.interrupt_req_pin(IR)			,
+	.interrupt_req_pin(IR)				,
 	.interrupt_req_register(IRQs_2Pri_Resolver)			
 	);
 
@@ -92,7 +92,7 @@ wire [7:0] InterruptID;
 
 Priority_Resolver Pri_Res(
 	.priority_rotate(priority_rotate)		,
-	.interrupt_mask(interrupt_mask)		,
+	.interrupt_mask(interrupt_mask)			,
 	.interrupt_special_mask(interrupt_special_mask)	,
 	.interrupt_request_register(IRQs_2Pri_Resolver)	,
 	.in_service_register(ISR_2Pri_Control)		,
@@ -110,10 +110,10 @@ wire [7:0] highest_IS;
 In_Service ISR (
 	.priority_rotate(priority_rotate)		,
 	.interrupt_special_mask(interrupt_special_mask)	,
-	.interrupt(InterruptID)			,
+	.interrupt(InterruptID)				,
 	.latch_in_service(Latch)			,
 	.end_of_interrupt(end_of_interrupt)		,
-	.in_service_register(ISR_2Pri)		,
+	.in_service_register(ISR_2Pri)			,
 	.highest_level_in_service(highest_IS)			
 	);
 
@@ -126,7 +126,7 @@ Control_Logic CONTROL_LOGIC(
 	.FlagFromRW(W_Flag_2Control)			,
 	.read2controlRW(R_Flag_2Control)		,
 	//internal_Bus
-	.DataBufferOutput(InternalData)		,
+	.DataBufferOutput(InternalData)			,
 	//IRR-->Control
 	.IRRinput(IRQs_2Pri_Resolver)			,
 	//Control-->IRR
@@ -138,24 +138,23 @@ Control_Logic CONTROL_LOGIC(
 	.SP_ENCascade(SP_ENCascade)			,
 	.ICW3Cascade(ICW3Cascade)			,
 	.ICW2Cascade(ICW2Cascade)			,
-	.SNGL(SNGL)				,
-	.IRRCascade(IRRCascade)			,
+	.SNGL(SNGL)					,
+	.IRRCascade(IRRCascade)				,
 	//Priority-->Control
 	.InterruptID(InterruptID)			,
 	//Top_Module
-	.INTA(INTA_n)				,
+	.INTA(INTA_n)					,
 	.INT(INT)					,
 	//Control-->(Priority & ISR)
-	.interrupt_mask(interrupt_mask)		,
+	.interrupt_mask(interrupt_mask)			,
 	.interrupt_special_mask(interrupt_special_mask)	,
 	.priority_rotate(priority_rotate)		,
 	//Control-->ISR
 	.end_of_interrupt(end_of_interrupt)		,
 	.latch_in_service(Latch)			,
 	//Control-->IRR
-	.freeze(freeze)				,
+	.freeze(freeze)					,
 	.clear_interrupt_request(clear_interrupt_request)			
 	);
 
 endmodule
-		

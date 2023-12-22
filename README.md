@@ -1,5 +1,5 @@
 # PIC-8259
-There are several issues and potential improvements in the provided Verilog code for the PIC 8259A implementation. I will highlight some of the issues and suggest corrections:
+There are several issues and potential improvements in our Verilog code for the PIC 8259A implementation. Here we will highlight some of the issues and suggest corrections that we found after a comprehensive search:
 
 1. **Bit_To_Num Module**: The `Bit_To_Num` module seems to be correct, but it's not used anywhere in the other modules. If it's intended to be used, you should replace the manual bit-to-number conversions with this module to make the code cleaner and more maintainable.
 
@@ -53,7 +53,7 @@ There are several issues and potential improvements in the provided Verilog code
 
 14. **rotate_left and rotate_right Modules**: These modules seem to be correct, but they are not connected to the rest of the logic in the `Priority_Resolver` module.
 
-To address these issues, you should:
+To address these issues, we should:
 - Ensure that all always blocks that infer sequential logic use non-blocking assignments.
 - Use case statements for better readability and synthesis where multiple conditions are checked.
 - Connect instantiated modules properly and ensure that all signals are driven and used where necessary.
@@ -61,4 +61,4 @@ To address these issues, you should:
 - Review the sensitivity lists of always blocks to include all signals that affect the logic within the block.
 - Remove unused code and modules to clean up the design.
 
-Due to the complexity of the code and the number of issues, it's recommended to tackle each module separately, write testbenches for each one, and ensure they work as expected before integrating them into the top-level module.
+Due to the complexity of the project and the number of issues, we decided to tackle each module separately, write testbenches for each one, and ensure they work as expected before integrating them into the top-level module.

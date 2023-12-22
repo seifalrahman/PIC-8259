@@ -4,8 +4,6 @@ module Priority_Resolver(
     input   wire   [2:0]   priority_rotate,
     input   wire   [7:0]   interrupt_mask,
     input   wire   [7:0]   interrupt_special_mask,
-    //input   wire         special_fully_nest_config,
-    //input   wire   [7:0]   highest_level_in_service,
 
     // Inputs from interrupt request 
     input   wire   [7:0]   interrupt_request_register,
@@ -72,24 +70,24 @@ module Priority_Resolver(
     
     
     resolve_priority res_pri(
-      .source(rotated_request),
-      .resolved_priority(resolved_priority)
+       .source(rotated_request),
+       .resolved_priority(resolved_priority)
     );
     
-wire [7:0] interrupt_wire;
+    wire [7:0] interrupt_wire;
 
 
-always @(*) begin
+    always @(*) begin
        interrupt = interrupt_wire;  
-end
+    end
 
     
     // rotate the result back into its rightful position as each device 
     // has its ISR at a certain unchanged location marked by its initial location
     rotate_left rotate_L1(
-      .source(rotated_interrupt),
-      .rotate(priority_rotate),
-      .rotated_L_output(interrupt_wire)
+       .source(rotated_interrupt),
+       .rotate(priority_rotate),
+       .rotated_L_output(interrupt_wire)
     );    
     // interrupt goes to the control unit which enables the INT pin as a result
     

@@ -37,10 +37,10 @@ module Control_Logic(
     // Interrupt control signals
     output  reg   [7:0]   interrupt_mask,//IMR
     output  reg   [7:0]   interrupt_special_mask,
-    output  reg   [7:0]   end_of_interrupt,
-    output  reg   [2:0]   priority_rotate,
-    output  reg           freeze,
-    output  reg          latch_in_service,//---------???????
+    output  reg   [7:0]   end_of_interrupt = 8'b00000000,
+    output  reg   [2:0]   priority_rotate = 3'b111,
+    output  reg           freeze = 1'b0,
+    output  reg          latch_in_service = 1'b0,
     output  reg   [7:0]  clear_interrupt_request
     
 );
@@ -62,9 +62,9 @@ always @ (FlagFromRW or ReadWriteinputData)begin
 		AEOI=0;
 		interrupt_mask = 8'b11111111;
     
-    end_of_interrupt = 8'b11111111;
-    clear_interrupt_request = 8'b11111111;
-   	interrupt_special_mask <= 8'b00000000;   // due to functionality of interrupt_special_mask it should initially start with zeros
+    		end_of_interrupt = 8'b11111111;
+   		 clear_interrupt_request = 8'b11111111;
+   		interrupt_special_mask <= 8'b00000000;   // due to functionality of interrupt_special_mask it should initially start with zeros
         						 // as it's different from interrupt mask (temporarily change enabled/disabled interrupts)
                
 		priority_rotate <= 3'b111;  //  while intiializing set priority to 7 (no rotation) (init phase)
@@ -86,7 +86,6 @@ end
 	else if (FlagFromRW==3)begin
 		CWregFile[3]=ReadWriteinputData ;
 		ICW4=1;
-		
 		if(CWregFile[3][3]==1)
 			SP_ENCascade=CWregFile[3][2];
 		if(SP_ENCascade==1&& SNGL==0)//MASTER----CASCADE
@@ -95,7 +94,7 @@ end
 			AEOI=0;
 		else if(SNGL==1) //SINGLE 
 			AEOI=CWregFile[3][1];
-		
+		clear_interrupt_request = 8'b00000000;
 end
 	else if (FlagFromRW==4)begin
 		CWregFile[4]=ReadWriteinputData ;
@@ -138,7 +137,7 @@ assign IRRCascade = InterruptID ;
 
 
 // Acknowledge + Freeze + CLR IRR
-reg cnt=0 ;
+reg [1:0]cnt=0 ;
 always @(posedge INTA)begin
 	
 	cnt=cnt+1;
@@ -158,7 +157,7 @@ end
 
 //Freeze
 always @ (negedge INTA)begin
-  freeze = 1;
+  freeze = 0;
   latch_in_service = 0;
 end
 
@@ -192,7 +191,7 @@ end
   
     
 //register to hold result of Num_To_Bit(value data bus) in case of specific EOI
-wire [7:0] Specific_EOI = 8'b00000000;    
+wire [7:0] Specific_EOI ;    
 Num_To_Bit n1(
      .source(CWregFile[5][2:0]),
      .num2bit(Specific_EOI)

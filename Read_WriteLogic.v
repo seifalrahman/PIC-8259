@@ -1,5 +1,5 @@
 module Read_WriteLogic (
-			input wire RD,WR,A0,CS,[7:0]inputRegister,
+			input wire RD,WR,A0,CS,[7:0]inputData,
                         output reg [7:0] control_output_Register,
                         output reg [2:0]Flag,	
                         output reg [2:0]read2control 
@@ -11,12 +11,12 @@ reg ICW1 ,ICW2,ICW3,ICW4,OCW1,OCW2,OCW3 ;//flags for ICW ...... OCW
 reg [1:0] LastOCW ;//TO KNOW LAST OCW CREATED 
 reg [3:0]counter =0 ;
 
-always @ (WR or inputRegister)
+always @ (WR or inputData)
 begin : Write_Logic
  	
 	if(WR==0 && RD==1&& CS==0)
 	begin
-		ICW1=(~A0) &  inputRegister[4] ;/*Detecting whether the recieved data is ICW1 or ICW2 , Current InputRegister is ICW1*/
+		ICW1=(~A0) &  inputData[4] ;/*Detecting whether the recieved data is ICW1 or ICW2 , Current InputData is ICW1*/
 		ICW2 =A0 ;
 		
 		if(counter==2)
@@ -30,7 +30,7 @@ begin : Write_Logic
 		
 		if(ICW1==1 && ICW2==0 &&counter==0)
 		begin
-	    		regFile[0]=inputRegister ; 
+	    		regFile[0]=inputData ; 
 	    		/*it happens to be ICW1 , so store it in the register file and increment the counter to keep track of the sequence of the recieved data*/
 	    		counter=counter+1 ;
 	    		/*we say that lastOCW =0 because we had not sent any OCWs till now 
@@ -40,14 +40,14 @@ begin : Write_Logic
 		end
 		else if (ICW2==1 && ICW1==0 &&counter==1)
 		begin
-	    		regFile[1]=inputRegister;
+	    		regFile[1]=inputData;
 	    		counter=counter+1 ;
 	    		Flag=1;
 	    		LastOCW=0 ;
 		end
 		else if(counter==2 && ICW3==1)
 		begin
-			regFile[2]=inputRegister ; //if it is ICW3 
+			regFile[2]=inputData ; //if it is ICW3 
 			LastOCW=0;
 			if(ICW4==0)
 			begin
@@ -62,31 +62,31 @@ begin : Write_Logic
 		begin 
 		    /*we noticed that ICW3 is not obligatory to send before ICW2 so we had the different values of counter into consideration while detecting ICW4*/
     			LastOCW=0 ;
-    			regFile[3]=inputRegister ;
+    			regFile[3]=inputData ;
     			Flag=3;
     			counter=5;//start recieving the OCWs
 		end
 			
 		else if(counter==5 && A0)
 		begin// Detecting if it is OCW1
-			regFile[4]=inputRegister;  
+			regFile[4]=inputData;  
 			Flag=4;
 			LastOCW=1;//we keep track whether it is OCW1 or OCW2 or OCW3
 		end
 	
-		else if(counter==5 && ~A0 && ~inputRegister[3] &&~inputRegister[4] )
+		else if(counter==5 && ~A0 && ~inputData[3] &&~inputData[4] )
 		begin // Detecting if it is OCW2
-		    regFile[5]=inputRegister;
+		    regFile[5]=inputData;
 		    Flag=5 ;
 		    LastOCW=2;//we keep track whether it is OCW1 or OCW2 or OCW3
 		end
-		else if(counter==5 && ~A0 && inputRegister[3] &&~inputRegister[4] )
+		else if(counter==5 && ~A0 && inputData[3] &&~inputData[4] )
 		begin// Detecting if it is OCW3 
-		    regFile[6]=inputRegister;
+		    regFile[6]=inputData;
 		    Flag=6;
 		    LastOCW=3; //we keep track whether it is OCW1 or OCW2 or OCW3
 		end 
-		control_output_Register=inputRegister;
+		control_output_Register=inputData;
 
 	end 
 	else

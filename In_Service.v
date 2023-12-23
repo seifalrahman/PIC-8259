@@ -5,7 +5,7 @@ module In_Service(
     input      [7:0]   interrupt_special_mask,
     input      [7:0]   interrupt,
     input              latch_in_service,
-    input      [7:0]   end_of_interrupt,  
+    input      [7:0]   end_of_interrupt ,  
 
     // Outputs
     output  reg     [7:0]   in_service_register = 8'b00000000,
@@ -18,7 +18,7 @@ module In_Service(
   //
   // In service register
   //                           
-  always @(*) begin
+  always @(latch_in_service or end_of_interrupt) begin
             in_service_register = (in_service_register & ~end_of_interrupt) 
                                      | (latch_in_service == 1'b1 ? interrupt : 8'b00000000);
   end

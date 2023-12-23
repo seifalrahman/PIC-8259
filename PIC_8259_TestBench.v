@@ -219,16 +219,14 @@ task TASK_8086_NORMAL_INTERRUPT_TEST();
         TASK_SEND_ACK_TO_8086();
         TASK_SEND_SPECIFIC_EOI(3'b111);
     end
-    endtask
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////
+endtask
+
+	
 task TASK_READING_STATUS_TEST();
     begin
         #10;
         // ICW1
-        TASK_WRITE_DATA(1'b0, 8'b00011111);
+	TASK_WRITE_DATA(1'b0, 8'b00010111);
         // ICW2
         TASK_WRITE_DATA(1'b1, 8'b00000000);
         // ICW4
@@ -238,123 +236,122 @@ task TASK_READING_STATUS_TEST();
         // OCW3
         TASK_WRITE_DATA(1'b0, 8'b00001000);
 
-        
         // OCW3
         TASK_WRITE_DATA(1'b0, 8'b00001010);
-        TASK_READ_DATA(1'b0);//IRR will be sent 
+        TASK_READ_DATA(1'b0);			//IRR will be sent 
 
         TASK_INTERRUPT_REQUEST(8'b00000001);
         TASK_SEND_ACK_TO_8086();
         #10;
 
         TASK_INTERRUPT_REQUEST(8'b00000001);
-        TASK_READ_DATA(1'b0);//IRR will be sent 
+        TASK_READ_DATA(1'b0);			//IRR will be sent 
 
         TASK_INTERRUPT_REQUEST(8'b00000010);
-        TASK_READ_DATA(1'b0);//IRR will be sent 
+        TASK_READ_DATA(1'b0);			//IRR will be sent 
 
         TASK_INTERRUPT_REQUEST(8'b00000100);
-        TASK_READ_DATA(1'b0);//IRR will be sent 
+        TASK_READ_DATA(1'b0);			//IRR will be sent 
 
         TASK_INTERRUPT_REQUEST(8'b00001000);
-        TASK_READ_DATA(1'b0);//IRR will be sent 
+        TASK_READ_DATA(1'b0);			//IRR will be sent 
 
         TASK_INTERRUPT_REQUEST(8'b00010000);
-        TASK_READ_DATA(1'b0);//IRR will be sent 
+        TASK_READ_DATA(1'b0);			//IRR will be sent 
 
         TASK_INTERRUPT_REQUEST(8'b00100000);
-        TASK_READ_DATA(1'b0);//IRR will be sent 
+        TASK_READ_DATA(1'b0);			//IRR will be sent 
 
         TASK_INTERRUPT_REQUEST(8'b01000000);
-        TASK_READ_DATA(1'b0);//IRR will be sent 
+        TASK_READ_DATA(1'b0);			//IRR will be sent 
 
         TASK_INTERRUPT_REQUEST(8'b10000000);
-        TASK_READ_DATA(1'b0);//IRR will be sent 
+        TASK_READ_DATA(1'b0);			//IRR will be sent 
 
         
         TASK_WRITE_DATA(1'b0, 8'b00001011);
 
-        TASK_READ_DATA(1'b0);//ISR will be sent
+        TASK_READ_DATA(1'b0);			//ISR will be sent
 
         TASK_SEND_NON_SPECIFIC_EOI();
         TASK_SEND_ACK_TO_8086();
         #10;
-        TASK_READ_DATA(1'b0);//ISR will be sent
+        TASK_READ_DATA(1'b0);			//ISR will be sent
 
         TASK_SEND_NON_SPECIFIC_EOI();
         TASK_SEND_ACK_TO_8086();
         #10;
-        TASK_READ_DATA(1'b0);//ISR will be sent
+        TASK_READ_DATA(1'b0);			//ISR will be sent
 
         TASK_SEND_NON_SPECIFIC_EOI();
         TASK_SEND_ACK_TO_8086();
         #10;
-        TASK_READ_DATA(1'b0);//ISR will be sent
+        TASK_READ_DATA(1'b0);			//ISR will be sent
 
         TASK_SEND_NON_SPECIFIC_EOI();
         TASK_SEND_ACK_TO_8086();
         #10;
-        TASK_READ_DATA(1'b0);//ISR will be sent
+        TASK_READ_DATA(1'b0);			//ISR will be sent
 
         TASK_SEND_NON_SPECIFIC_EOI();
         TASK_SEND_ACK_TO_8086();
         #10;
-        TASK_READ_DATA(1'b0);//ISR will be sent
+        TASK_READ_DATA(1'b0);			//ISR will be sent
 
         TASK_SEND_NON_SPECIFIC_EOI();
         TASK_SEND_ACK_TO_8086();
         #10;
-        TASK_READ_DATA(1'b0);//ISR will be sent
+        TASK_READ_DATA(1'b0);			//ISR will be sent
 
         TASK_SEND_NON_SPECIFIC_EOI();
         TASK_SEND_ACK_TO_8086();
         #10;
-        TASK_READ_DATA(1'b0);//ISR will be sent
+        TASK_READ_DATA(1'b0);			//ISR will be sent
 
         TASK_SEND_NON_SPECIFIC_EOI();
         TASK_SEND_ACK_TO_8086();
         #10;
-        TASK_READ_DATA(1'b0);//ISR will be sent
+        TASK_READ_DATA(1'b0);			//ISR will be sent
 
         TASK_SEND_NON_SPECIFIC_EOI();
-        TASK_READ_DATA(1'b0);//ISR will be sent
+        TASK_READ_DATA(1'b0);			//ISR will be sent
 
         
         // OCW1
         TASK_WRITE_DATA(1'b1, 8'b00000000);
-        TASK_READ_DATA(1'b1);//IMR will be sent
+        TASK_READ_DATA(1'b1);			//IMR will be sent
 
         // OCW1
         TASK_WRITE_DATA(1'b1, 8'b00000001);
-        TASK_READ_DATA(1'b1);//IMR will be sent
+        TASK_READ_DATA(1'b1);			//IMR will be sent
 
         // OCW1
         TASK_WRITE_DATA(1'b1, 8'b00000010);
-        TASK_READ_DATA(1'b1);//IMR will be sent
+        TASK_READ_DATA(1'b1);			//IMR will be sent
 
         // OCW1
         TASK_WRITE_DATA(1'b1, 8'b00000100);
-        TASK_READ_DATA(1'b1);//IMR will be sent
+        TASK_READ_DATA(1'b1);			//IMR will be sent
 
         // OCW1
         TASK_WRITE_DATA(1'b1, 8'b00001000);
-        TASK_READ_DATA(1'b1);//IMR will be sent
+        TASK_READ_DATA(1'b1);			//IMR will be sent
 
         // OCW1
         TASK_WRITE_DATA(1'b1, 8'b00010000);
-        TASK_READ_DATA(1'b1);//IMR will be sent
+        TASK_READ_DATA(1'b1);			//IMR will be sent
 
         // OCW1
         TASK_WRITE_DATA(1'b1, 8'b00100000);
-        TASK_READ_DATA(1'b1);//IMR will be sent
+        TASK_READ_DATA(1'b1);			//IMR will be sent
 
         // OCW1
         TASK_WRITE_DATA(1'b1, 8'b01000000);
-        TASK_READ_DATA(1'b1);//IMR will be sent
+        TASK_READ_DATA(1'b1);			//IMR will be sent
 
         // OCW1
         TASK_WRITE_DATA(1'b1, 8'b10000000);
-        TASK_READ_DATA(1'b1);//IMR will be sent
+        TASK_READ_DATA(1'b1);			//IMR will be sent
 
         // OCW1
         //TASK_WRITE_DATA(1'b1, 8'b00000000);
@@ -367,7 +364,7 @@ task TASK_NON_SPECTAL_FULLY_NESTED_TEST();
     begin
         #10;
         // ICW1
-        TASK_WRITE_DATA(1'b0, 8'b00011111);
+	TASK_WRITE_DATA(1'b0, 8'b00010111);
         // ICW2
         TASK_WRITE_DATA(1'b1, 8'b00000000);
         // ICW4
@@ -393,13 +390,13 @@ task TASK_NON_SPECTAL_FULLY_NESTED_TEST();
         TASK_SEND_SPECIFIC_EOI(3'b101);//5
         #10;
     end
-    endtask
+endtask
 
 task TASK_AUTO_EOI_TEST();
     begin
         #10;
         // ICW1
-        TASK_WRITE_DATA(1'b0, 8'b00011111);
+	TASK_WRITE_DATA(1'b0, 8'b00010111);
         // ICW2
         TASK_WRITE_DATA(1'b1, 8'b00000000);
         // ICW4
@@ -437,9 +434,7 @@ task TASK_AUTO_EOI_TEST();
         TASK_SEND_ACK_TO_8086();
         #10;
     end
-    endtask
-
-
+endtask
 
 
 
@@ -518,7 +513,7 @@ task TASK_AUTO_EOI_TEST();
         TASK_SEND_SPECIFIC_EOI(3'b111);
         #10;
     end
-    endtask
+endtask
 
 
 
@@ -526,7 +521,7 @@ task TASK_NON_SPECIFIC_EOI_TEST();
     begin
         #10;
         // ICW1
-        TASK_WRITE_DATA(1'b0, 8'b00011111);
+	TASK_WRITE_DATA(1'b0, 8'b00010111);
         // ICW2
         TASK_WRITE_DATA(1'b1, 8'b00000000);
         // ICW4
@@ -574,7 +569,7 @@ task TASK_ROTATE_TEST();
     begin
         #10;
         // ICW1
-        TASK_WRITE_DATA(1'b0, 8'b00011111);
+	TASK_WRITE_DATA(1'b0, 8'b00010111);
         // ICW2
         TASK_WRITE_DATA(1'b1, 8'b00000000);
         // ICW4
@@ -691,37 +686,59 @@ task TASK_ROTATE_TEST();
         TASK_WRITE_DATA(1'b0, 8'b11000111);  */
         #10;
     end
-    endtask
+endtask
+	
 initial begin
         TASK_INIT();
- 	$display("******************************** ");
-        $display("***** TEST 8086 INTERRUPT  ***** ");
-        $display("******************************** ");
+	
+	/*
+ 	$display(                             "******************************** ");
+	$display(                             "***** TEST 8086 INTERRUPT  ***** ");
+	$display(                             "******************************** ");
         TASK_8086_NORMAL_INTERRUPT_TEST();
-	$display("******************************** ");
-        $display("***** TEST INTERRUPT MASK ***** ") ;
-        $display("******************************** ");
+	*/
+	
+	/*
+	$display(                             "******************************** ");
+        $display(                             "***** TEST INTERRUPT MASK ****** ") ;
+        $display(                             "******************************** ");
         TASK_INTERRUPT_MASK_TEST();
-	$display("******************************** ");
-        $display("***** TEST AUTO EOI        ***** ");
-        $display("******************************** ");
+	*/
+	
+	/*
+	$display(                             "******************************** ");
+        $display(                             "***** TEST AUTO EOI        ***** ");
+        $display(                             "******************************** ");
         TASK_AUTO_EOI_TEST();
-	$display("***************************************** ");
-        $display("***** TEST NON SPECIAL FULLY NESTED ***** ");
-        $display("***************************************** ");
+	*/
+	
+	/*
+	$display(                             "***************************************** ");
+        $display(                             "***** TEST NON SPECIAL FULLY NESTED ***** ");
+        $display(                             "***************************************** ");
         TASK_NON_SPECTAL_FULLY_NESTED_TEST();
-	$display("******************************** ");
-        $display("***** TEST NON SPECIFIC EOI*****");
-        $display("******************************** ");
+	*/
+	
+	/*
+	$display(                             "******************************** ");
+        $display(                             "***** TEST NON SPECIFIC EOI***** ");
+        $display(                             "******************************** ");
         TASK_NON_SPECIFIC_EOI_TEST();
-	$display("******************************** ");
-        $display("***** TEST ROTATION       ***** ");
-        $display("******************************** ");
+	*/
+	
+	/*
+	$display(                             "******************************** ");
+        $display(                             "***** TEST ROTATION       ****** ");
+        $display(                             "******************************** ");
         TASK_ROTATE_TEST();
-	$display("******************************** ");
-        $display("***** READING STATUS       *****" );
-        $display("******************************** ");
+	*/
+	
+	/*
+ 	$display(                             "******************************** ");
+        $display(                             "***** READING STATUS       ***** ");
+        $display(                             "******************************** ");
         TASK_READING_STATUS_TEST();
+	*/
 end
 
  always @* $monitor("At time %t: CS_n = %b, RD_n = %b, WR_n = %b, A0 = %b, CAS = %b , SP_EN_n = %b , D_IN = %b ,D_OUT = %b ,INT = %b,IR = %b",

@@ -113,7 +113,7 @@ In_Service ISR (
 	.interrupt(InterruptID)				,
 	.latch_in_service(Latch)			,
 	.end_of_interrupt(end_of_interrupt)		,
-	.in_service_register(ISR_2Pri)			,
+	.in_service_register(ISR_2Pri_Control)		,
 	.highest_level_in_service(highest_IS)			
 	);
 

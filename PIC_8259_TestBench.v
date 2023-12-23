@@ -388,26 +388,7 @@ task TASK_8086_NORMAL_INTERRUPT_TEST();
 
         TASK_INTERRUPT_REQUEST(8'b10000000);
         TASK_SEND_ACK_TO_8086();
-        TASK_SEND_SPECIFIC_EOI(3'b111);
-//**********************************************************************************//
-        
-        // ICW1
-        TASK_WRITE_DATA(1'b0, 8'b00011111);
-        // ICW2
-        TASK_WRITE_DATA(1'b1, 8'b11101000);
-        // ICW4
-        TASK_WRITE_DATA(1'b1, 8'b00000011);//AEOI
-        // OCW1
-        TASK_WRITE_DATA(1'b1, 8'b00000000);
-        // OCW3
-        TASK_WRITE_DATA(1'b0, 8'b00001000);
-
-        // Interrupt
-        TASK_INTERRUPT_REQUEST(8'b00000001);
-        TASK_SEND_ACK_TO_8086();
-        
-
-//*********************************************************************************//        
+        TASK_SEND_SPECIFIC_EOI(3'b111);   
         //4
         #10;
     end

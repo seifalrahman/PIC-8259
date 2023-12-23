@@ -38,7 +38,7 @@ Read_WriteLogic ReadWriteLogic(
 	.WR(WR_n)					,
 	.A0(A0)						,
 	.CS(CS_n)					,
-	.inputRegister(InternalData_OUT)		,
+	.inputData(InternalData_OUT)		,
 	.control_output_Register(W_Data_2Control)	,
 	.Flag(W_Flag_2Control)				,
 	.read2control(R_Flag_2Control)					

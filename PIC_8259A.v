@@ -1,5 +1,6 @@
 module PIC_8259A (
-		  inout wire [7:0]  	D 	,
+		  input wire [7:0]  	D_IN 	,
+		  output wire [7:0]	D_OUT	,
 		  inout wire [2:0]	CAS	,
 		  inout wire 		SP_EN_n	,
 		  input wire		RD_n 	, 
@@ -11,14 +12,16 @@ module PIC_8259A (
 		  output wire		INT	
 		);
 //internal_Bus
-wire [7:0] InternalData;
+wire [7:0] InternalData_IN , InternalData_OUT;
 
 //Cascade-->DataBuffer
 wire Flag_From_Cascade;
 
 DataBuffer DataBusBuffer(
-	.Data(D)				,
-	.InternalD(InternalData)		,
+	.CPU_IN_Data(D_IN)			,
+	.CPU_OUT_Data(D_OUT)			,
+	.IN_InternalD(InternalData_IN)		,
+	.OUT_InternalD(InternalData_OUT)	,
 	.R(RD_n)				,
 	.W(WR_n)				,
 	.Flag_From_Cascade(Flag_From_Cascade)
@@ -35,7 +38,7 @@ Read_WriteLogic ReadWriteLogic(
 	.WR(WR_n)					,
 	.A0(A0)						,
 	.CS(CS_n)					,
-	.inputRegister(InternalData)			,
+	.inputRegister(InternalData_OUT)		,
 	.control_output_Register(W_Data_2Control)	,
 	.Flag(W_Flag_2Control)				,
 	.read2control(R_Flag_2Control)					
@@ -57,7 +60,7 @@ Cascademodule Cascade_Buffer_Comparator(
 	.ICW2(ICW2Cascade)				,	
 	.SNGL(SNGL)					,
 	.INTA(INTA_n)					,
-	.codeAddress(InternalData)			,
+	.codeAddress(InternalData_IN)			,
 	.flagCodeAddress(Flag_From_Cascade)
 	);
 
@@ -84,7 +87,7 @@ wire [2:0] priority_rotate;
 wire [7:0] interrupt_mask;
 wire [7:0] interrupt_special_mask;
 
-//ISR-->Priority
+//ISR-->(Priority & Control)
 wire [7:0] ISR_2Pri_Control;
 
 //Priority -->(Control & ISR)
@@ -122,11 +125,11 @@ In_Service ISR (
 
 Control_Logic CONTROL_LOGIC(
 	//ReadWrite-->Control
-	.ReadWriteinputData(W_Data_2Control)		,
-	.FlagFromRW(W_Flag_2Control)			,
-	.read2controlRW(R_Flag_2Control)		,
+	.ReadWriteinputData(W_Data_2Control)		,		 
+	.FlagFromRW(W_Flag_2Control)			,		
+	.read2controlRW(R_Flag_2Control)		,		
 	//internal_Bus
-	.DataBufferOutput(InternalData)			,
+	.DataBufferOutput(InternalData_IN)		,
 	//IRR-->Control
 	.IRRinput(IRQs_2Pri_Resolver)			,
 	//Control-->IRR

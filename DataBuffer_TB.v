@@ -1,4 +1,3 @@
-
 `timescale 1ns /100ps
 module DataBuffer_TB;
   wire [7:0] CPU_IN_Data , CPU_OUT_Data , IN_InternalD , OUT_InternalD;

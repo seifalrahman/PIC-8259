@@ -1,6 +1,5 @@
 module PIC_8259A (
-		  input wire [7:0]  	D_IN 	,
-		  output wire [7:0]	D_OUT	,
+		  input wire [7:0]  	D 	,
 		  inout wire [2:0]	CAS	,
 		  inout wire 		SP_EN_n	,
 		  input wire		RD_n 	, 
@@ -12,20 +11,18 @@ module PIC_8259A (
 		  output wire		INT	
 		);
 //internal_Bus
-wire [7:0] InternalData_IN , InternalData_OUT;
+wire [7:0] InternalData;
 
 //Cascade-->DataBuffer
 wire Flag_From_Cascade;
 
-DataBuffer DataBusBuffer(
-	.CPU_IN_Data(D_IN)			,
-	.CPU_OUT_Data(D_OUT)			,
-	.IN_InternalD(InternalData_IN)		,
-	.OUT_InternalD(InternalData_OUT)	,
-	.R(RD_n)				,
-	.W(WR_n)				,
-	.Flag_From_Cascade(Flag_From_Cascade)
-	);
+DataBuffer Buff (
+    .D(D)					,
+    .InternalD(InternalData)			,
+    .R(RD_n)					,
+    .W(WR_n)					,
+    .Flag_From_Cascade(Flag_From_Cascade)
+  );
 
 
 //ReadWrite-->Control
@@ -38,7 +35,7 @@ Read_WriteLogic ReadWriteLogic(
 	.WR(WR_n)					,
 	.A0(A0)						,
 	.CS(CS_n)					,
-	.inputData(InternalData_OUT)		,
+	.inputData(InternalData)		,
 	.control_output_Register(W_Data_2Control)	,
 	.Flag(W_Flag_2Control)				,
 	.read2control(R_Flag_2Control)					
@@ -60,7 +57,7 @@ Cascademodule Cascade_Buffer_Comparator(
 	.ICW2(ICW2Cascade)				,	
 	.SNGL(SNGL)					,
 	.INTA(INTA_n)					,
-	.codeAddress(InternalData_IN)			,
+	.codeAddress(InternalData)			,
 	.flagCodeAddress(Flag_From_Cascade)
 	);
 
@@ -129,7 +126,7 @@ Control_Logic CONTROL_LOGIC(
 	.FlagFromRW(W_Flag_2Control)			,		
 	.read2controlRW(R_Flag_2Control)		,		
 	//internal_Bus
-	.DataBufferOutput(InternalData_IN)		,
+	.DataBufferOutput(InternalData)			,
 	//IRR-->Control
 	.IRRinput(IRQs_2Pri_Resolver)			,
 	//Control-->IRR

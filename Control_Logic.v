@@ -51,9 +51,12 @@ module Control_Logic(
     reg [1:0] SpecialMaskModeFlag ;
     reg end_of_acknowledge_sequence;
 //This Block Stores The ICWs and OCWs in our register File and sets their Flags to indicate that we stored them 
-
+    reg [1:0]cnt=0 ;
+    
 always @ (FlagFromRW or ReadWriteinputData)begin
 	if(FlagFromRW==0)begin
+	  latch_in_service = 1'b0;
+	  cnt=0;
 		CWregFile[0]=ReadWriteinputData ;
 		ICW1=1;
 		interrupt_mask = 8'b11111111;
@@ -137,7 +140,7 @@ assign IRRCascade = InterruptID ;
 
 
 // Acknowledge + Freeze + CLR IRR
-reg [1:0]cnt=0 ;
+
 always @(posedge INTA)begin
 	
 	cnt=cnt+1;

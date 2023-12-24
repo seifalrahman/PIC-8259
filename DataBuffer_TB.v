@@ -1,27 +1,23 @@
-`timescale 1ns /100ps
 module DataBuffer_TB;
-  wire [7:0] CPU_IN_Data , CPU_OUT_Data , IN_InternalD , OUT_InternalD;
-  reg R, W;
-  reg [7:0] CPU_IN_Data_reg , IN_InternalD_reg ;
+  wire [7:0] D , ID;
+  reg R , W , Flag_From_Cascade;
+  reg [7:0] D_buffer , ID_buffer;
 
+  assign D = ((R == 0 && W == 1) || Flag_From_Cascade == 1)  ? ID_buffer : 8'bzzzzzzzz;//CPU read
+  assign ID = (R == 1 && W == 0) ? D_buffer : 8'bzzzzzzzz;//CPU write
   DataBuffer Buff (
-    .CPU_IN_Data(CPU_IN_Data),
-    .CPU_OUT_Data(CPU_OUT_Data),
-    .IN_InternalD(IN_InternalD),
-    .OUT_InternalD(OUT_InternalD),
-    .R(R)            ,
-    .W(W)            ,
-    .Flag_From_Cascade()
+    .D(D),
+    .InternalD(ID),
+    .R(R),
+    .W(W),
+    .Flag_From_Cascade(Flag_From_Cascade)
   );
-  assign IN_InternalD = IN_InternalD_reg;
-  assign CPU_IN_Data = CPU_IN_Data_reg;
   initial begin    
-    #10 R = 0; W = 1; IN_InternalD_reg = 8'b10101010; //READ
-    #10 R = 1; W = 0; CPU_IN_Data_reg  = 8'b11111111; //WRITE
-    #10 R = 1; W = 1;
-    #10 R = 0; W = 0;
+    #10 R = 0; W = 1; ID_buffer = 8'b11111111;
+    #10 Flag_From_Cascade = 1; ID_buffer = 8'b10101010;
+    #10 R = 1; W = 0;Flag_From_Cascade = 0; D_buffer = 8'b00000000;
   end
  
-  always @* $monitor("At time %t: CPU_OUT_Data = %b, OUT_InternalD = %b, IN_InternalD = %b, CPU_IN_Data = %b, R = %b, W = %b ",
-                    $time, CPU_OUT_Data , OUT_InternalD , IN_InternalD  ,CPU_IN_Data,  R , W );
+  always @* $monitor("At time %t: D = %b, InternalD = %b, R = %b, W = %b ,Flag_From_Cascade = %b",
+                    $time, D, ID , R, W,Flag_From_Cascade);
 endmodule

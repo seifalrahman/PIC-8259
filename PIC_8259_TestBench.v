@@ -5,7 +5,7 @@ reg           chip_select;
 reg           read_enable;
 reg            write_enable;
 reg            A0;
-reg   [7:0]    data_bus_in;
+reg   [7:0]    data_bus;
 reg   [2:0]   	  CAS;
 reg             SP_EN;
 reg           	  INTA;
@@ -15,8 +15,7 @@ wire 	  chip_select_wire;
 wire	read_enable_wire;
 wire	write_enable_wire;
 wire	 A0_wire;
-wire	[7:0]    data_bus_wire_in;
-wire	[7:0]	 data_bus_wire_out;
+wire	[7:0]    data_bus_wire;
 wire	[2:0]   	  CAS_wire;
 wire	SP_EN_wire;
 wire	INTA_wire;
@@ -27,7 +26,7 @@ assign  chip_select_wire = chip_select;
 assign 	read_enable_wire = read_enable;
 assign 	write_enable_wire = write_enable;
 assign   A0_wire =  A0;
-assign 	data_bus_wire_in = data_bus_in;
+assign 	data_bus_wire = data_bus;
 assign 	CAS_wire = CAS;
 assign SP_EN_wire = SP_EN;
 assign INTA_wire = INTA;
@@ -41,8 +40,7 @@ PIC_8259A pic (
     .A0(A0_wire),
     .CAS(CAS_wire),
     .SP_EN_n(SP_EN_wire),
-    .D_IN(data_bus_wire_in),
-    .D_OUT(data_bus_wire_out),
+    .D(data_bus_wire),
     .INTA_n(INTA_wire),
     .INT(INT_wire),
     .IR(IRR_wire)
@@ -56,7 +54,7 @@ begin
     read_enable             = 1'b1;
     write_enable            = 1'b1;
     A0                      = 1'b0;
-    data_bus_in                = 8'b00000000;
+    data_bus                = 8'b00000000;
     CAS                     = 3'b000;
     SP_EN                   = 1'b0;
     INTA                    = 1'b1;
@@ -73,7 +71,7 @@ task TASK_WRITE_DATA;
 begin
     #10; // Assuming no delay for this step
 	 A0            = addr;
-    data_bus_in      = data;
+    data_bus           = data;
 	#5
     chip_select   = 1'b0;
     write_enable  = 1'b0;
@@ -690,12 +688,12 @@ endtask
 initial begin
         TASK_INIT();
 	
-	/*
- 	$display(                             "******************************** ");
-	$display(                             "***** TEST 8086 INTERRUPT  ***** ");
-	$display(                             "******************************** ");
+	
+ 	$display("				******************************** ");
+	$display("				***** TEST 8086 INTERRUPT******* ");
+	$display("				******************************** ");
         TASK_8086_NORMAL_INTERRUPT_TEST();
-	*/
+	
 	
 	/*
 	$display(                             "******************************** ");
@@ -740,7 +738,6 @@ initial begin
 	*/
 end
 
- always @* $monitor("At time %t: CS_n = %b, RD_n = %b, WR_n = %b, A0 = %b, CAS = %b , SP_EN_n = %b , D_IN = %b ,D_OUT = %b ,INT = %b,IR = %b",
-                    $time, chip_select_wire , read_enable_wire , write_enable_wire  , A0_wire ,  CAS_wire , SP_EN_wire , data_bus_wire_in ,data_bus_wire_out ,INT_wire,IRR_wire);
+ always @* $monitor("At time %t: CS_n = %b, RD_n = %b, WR_n = %b, A0 = %b, CAS = %b , SP_EN_n = %b , D = %b,INT = %b,IR = %b",
+                    $time, chip_select_wire , read_enable_wire , write_enable_wire  , A0_wire ,  CAS_wire , SP_EN_wire , data_bus_wire,INT_wire,IRR_wire);
 endmodule
-

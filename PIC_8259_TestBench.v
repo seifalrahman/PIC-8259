@@ -379,19 +379,18 @@ task TASK_NON_SPECTAL_FULLY_NESTED_TEST();
         TASK_SEND_ACK_TO_8086();//				|
         #10;//							|
         TASK_INTERRUPT_REQUEST(8'b00100000);    // 5		|
-        TASK_INTERRUPT_REQUEST(8'b00010000);    // 4		|
+        TASK_INTERRUPT_REQUEST(8'b01000000);    // 6		|
         TASK_INTERRUPT_REQUEST(8'b00001000);    // 3		|
         TASK_SEND_ACK_TO_8086();	//			|
         TASK_SEND_SPECIFIC_EOI(3'b011); //                      |
         TASK_SEND_SPECIFIC_EOI(3'b100);//first one--------------
-        TASK_SEND_ACK_TO_8086();//for the second one 
-        TASK_SEND_SPECIFIC_EOI(3'b100);//for the second one 
-        TASK_SEND_ACK_TO_8086();//5
+        TASK_SEND_ACK_TO_8086();      //5
         TASK_SEND_SPECIFIC_EOI(3'b101);//5
+        TASK_SEND_ACK_TO_8086();      //6
+        TASK_SEND_SPECIFIC_EOI(3'b110);//6
         #10;
     end
 endtask
-
 task TASK_AUTO_EOI_TEST();
     begin
         #10;

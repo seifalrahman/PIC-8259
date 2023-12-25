@@ -1,5 +1,5 @@
 module PIC_8259A (
-		  input wire [7:0]  	D 	,
+		  inout wire [7:0]  	D	,
 		  inout wire [2:0]	CAS	,
 		  inout wire 		SP_EN_n	,
 		  input wire		RD_n 	, 
@@ -10,19 +10,22 @@ module PIC_8259A (
 		  input wire		INTA_n	,
 		  output wire		INT	
 		);
-//internal_Bus
-wire [7:0] InternalData;
 
-//Cascade-->DataBuffer
-wire Flag_From_Cascade;
+//Control -->Data_Buffer
+wire [7:0] InternalData_IN ;
+wire 	   flagFromControl;			
+//Data_Buffer-->ReadWrite
+wire [7:0] InternalData_OUT ;
 
-DataBuffer Buff (
-    .D(D)					,
-    .InternalD(InternalData)			,
-    .R(RD_n)					,
-    .W(WR_n)					,
-    .Flag_From_Cascade(Flag_From_Cascade)
-  );
+
+DataBuffer DataBusBuffer(
+	.Data(D)				,
+	.InternalD_out(InternalData_OUT)	,
+	.InternalD_in(InternalData_IN)		,
+	.R(RD_n)				,
+	.W(WR_n)				,
+	.flagFromControl(flagFromControl)			
+	);
 
 
 //ReadWrite-->Control
@@ -35,7 +38,7 @@ Read_WriteLogic ReadWriteLogic(
 	.WR(WR_n)					,
 	.A0(A0)						,
 	.CS(CS_n)					,
-	.inputData(InternalData)		,
+	.inputData(InternalData_OUT)			,
 	.control_output_Register(W_Data_2Control)	,
 	.Flag(W_Flag_2Control)				,
 	.read2control(R_Flag_2Control)					
@@ -49,6 +52,9 @@ wire [7:0] ICW2Cascade	;
 wire SP_ENCascade;	
 wire SNGL;//to check singlr or cascade mode
  
+//Cascade-->Control
+wire [7:0] codeAddress ;
+
 Cascademodule Cascade_Buffer_Comparator(
 	.CAS(CAS)					,
 	.SP_EN(SP_ENCascade)				,
@@ -57,8 +63,7 @@ Cascademodule Cascade_Buffer_Comparator(
 	.ICW2(ICW2Cascade)				,	
 	.SNGL(SNGL)					,
 	.INTA(INTA_n)					,
-	.codeAddress(InternalData)			,
-	.flagCodeAddress(Flag_From_Cascade)
+	.CODEADDRESS(codeAddress)			
 	);
 
 
@@ -103,6 +108,7 @@ Priority_Resolver Pri_Res(
 //Control-->ISR
 wire Latch;
 wire [7:0] end_of_interrupt;
+wire NON_SPEC_EN;
 
 //ISR-->Control
 wire [7:0] highest_IS;
@@ -114,10 +120,9 @@ In_Service ISR (
 	.latch_in_service(Latch)			,
 	.end_of_interrupt(end_of_interrupt)		,
 	.in_service_register(ISR_2Pri_Control)		,
-	.highest_level_in_service(highest_IS)			
+	.highest_level_in_service(highest_IS)		,
+	.NON_SPEC_EN()	
 	);
-
-
 
 
 Control_Logic CONTROL_LOGIC(
@@ -125,8 +130,11 @@ Control_Logic CONTROL_LOGIC(
 	.ReadWriteinputData(W_Data_2Control)		,		 
 	.FlagFromRW(W_Flag_2Control)			,		
 	.read2controlRW(R_Flag_2Control)		,		
-	//internal_Bus
-	.DataBufferOutput(InternalData)			,
+	//Control-->Buffer
+	.DataBufferOutput(InternalData_IN)		,
+	.Flag2Buffer(flagFromControl)			,
+	//Cascade-->Control
+	.codeAddress(codeAddress)			,
 	//IRR-->Control
 	.IRRinput(IRQs_2Pri_Resolver)			,
 	//Control-->IRR
@@ -154,7 +162,8 @@ Control_Logic CONTROL_LOGIC(
 	.latch_in_service(Latch)			,
 	//Control-->IRR
 	.freeze(freeze)					,
-	.clear_interrupt_request(clear_interrupt_request)			
+	.clear_interrupt_request(clear_interrupt_request),
+	.NON_SPEC_EN(NON_SPEC_EN)					
 	);
 
 endmodule

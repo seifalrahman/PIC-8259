@@ -7,16 +7,15 @@ module Cascademodule (inout wire [2:0]CAS ,
                   will contain the slave address code from the trailing edge of
                   the first INTA pulse to the trailing edge of the second
                   pulse*/
-              output wire [7:0] codeAddress ,
-	      output reg flagCodeAddress  
+              output reg [7:0] CODEADDRESS  
 		);
 
 reg [2:0] ID ;
 reg [3:0]IRRtemp;
 reg [7:0] hasSlave ;
 reg [2:0] CASBUFFER ;
-reg [7:0] CODEADDRESS;
-
+wire [7:0] codeAddress ;
+reg flagCodeAddress ;
 //For IRR------>IRRtemp
 /*
 *Note : We send the highest priority IRR from Priority resolver and we have to edit this in control unit

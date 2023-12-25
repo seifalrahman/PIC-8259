@@ -26,7 +26,7 @@ assign  chip_select_wire = chip_select;
 assign 	read_enable_wire = read_enable;
 assign 	write_enable_wire = write_enable;
 assign   A0_wire =  A0;
-assign 	data_bus_wire = data_bus;
+assign 	data_bus_wire = (write_enable == 0 && read_enable == 1) ? data_bus : 8'bzzzzzzzz;
 assign 	CAS_wire = CAS;
 assign SP_EN_wire = SP_EN;
 assign INTA_wire = INTA;
@@ -59,6 +59,7 @@ begin
     SP_EN                   = 1'b0;
     INTA                    = 1'b1;
     IRR                     = 8'b00000000;
+    TASK_SEND_ACK_TO_8086();
     
 end
 endtask
@@ -69,13 +70,15 @@ task TASK_WRITE_DATA;
   input  addr;
   input [7:0] data;
 begin
-    #10; // Assuming no delay for this step
+    	#10; // Assuming no delay for this step
 	 A0            = addr;
-    data_bus           = data;
-	#5
+    data_bus	      = data;
+	#5;
+    write_enable = 1'b0;	
     chip_select   = 1'b0;
-    write_enable  = 1'b0;
     read_enable   = 1'b1;
+	#5
+    write_enable  = 1'b1;
    
 end
 endtask
@@ -92,6 +95,8 @@ begin
     read_enable   = 1'b0;
     write_enable  = 1'b1;
     A0        = addr;
+    #5
+     read_enable   = 1'b1;
     
 end
 
@@ -117,6 +122,8 @@ task TASK_SEND_SPECIFIC_EOI;
   input [2:0] int_no;
 begin
     TASK_WRITE_DATA(1'b0, {8'b01100, int_no});
+    #5;
+    TASK_WRITE_DATA(1'b0, 8'b00000000);
 end
 endtask
 
@@ -125,6 +132,8 @@ endtask
 task TASK_SEND_NON_SPECIFIC_EOI;
 begin
     TASK_WRITE_DATA(1'b0, 8'b00100000);
+    #5
+    TASK_WRITE_DATA(1'b0, 8'b00000000);
 end
 endtask
 
@@ -183,7 +192,9 @@ task TASK_8086_NORMAL_INTERRUPT_TEST();
         TASK_WRITE_DATA(1'b1, 8'b00000000);//all interrupts are unmasked 
         // OCW3
         TASK_WRITE_DATA(1'b0, 8'b00001000);
-
+	chip_select   = 1'b0;
+   	 write_enable  = 1'b1;
+  	 read_enable   = 1'b1;
         // Interrupt
         TASK_INTERRUPT_REQUEST(8'b00000001);
         TASK_SEND_ACK_TO_8086();
@@ -566,7 +577,7 @@ task TASK_ROTATE_TEST();
     begin
         #10;
         // ICW1
-	TASK_WRITE_DATA(1'b0, 8'b00010111);
+	      TASK_WRITE_DATA(1'b0, 8'b00010111);
         // ICW2
         TASK_WRITE_DATA(1'b1, 8'b00000000);
         // ICW4
@@ -584,30 +595,38 @@ task TASK_ROTATE_TEST();
         TASK_INTERRUPT_REQUEST(8'b11111111);
 
         TASK_SEND_ACK_TO_8086();
+        #10
         TASK_SEND_NON_SPECIFIC_EOI();
 
         TASK_SEND_ACK_TO_8086();
+        #10
         TASK_SEND_NON_SPECIFIC_EOI();
 
         TASK_SEND_ACK_TO_8086();
+        #10
         TASK_SEND_NON_SPECIFIC_EOI();
 
         TASK_SEND_ACK_TO_8086();
+        #10
         TASK_SEND_NON_SPECIFIC_EOI();
 
         TASK_SEND_ACK_TO_8086();
+        #10
         TASK_SEND_NON_SPECIFIC_EOI();
 
         TASK_SEND_ACK_TO_8086();
+        #10
         TASK_SEND_NON_SPECIFIC_EOI();
 
         TASK_SEND_ACK_TO_8086();
+        #10
         TASK_SEND_NON_SPECIFIC_EOI();
 
         TASK_SEND_ACK_TO_8086();
+        #10
         TASK_SEND_NON_SPECIFIC_EOI();
 
-        
+       /* 
         // OCW2*************************
         TASK_WRITE_DATA(1'b0, 8'b11000111);//SET PRIORITY COMMAND ///{L2,L1,L0}=7
 
@@ -618,29 +637,37 @@ task TASK_ROTATE_TEST();
         TASK_INTERRUPT_REQUEST(8'b11111111);
 
         TASK_SEND_ACK_TO_8086();
+        #10
         TASK_SEND_NON_SPECIFIC_EOI();
 
         TASK_SEND_ACK_TO_8086();
+        #10
         TASK_SEND_NON_SPECIFIC_EOI();
 
         TASK_SEND_ACK_TO_8086();
+        #10
         TASK_SEND_NON_SPECIFIC_EOI();
 
         TASK_SEND_ACK_TO_8086();
+        #10
         TASK_SEND_NON_SPECIFIC_EOI();
 
         TASK_SEND_ACK_TO_8086();
+        #10
         TASK_SEND_NON_SPECIFIC_EOI();
 
         TASK_SEND_ACK_TO_8086();
+        #10
         TASK_SEND_NON_SPECIFIC_EOI();
 
         TASK_SEND_ACK_TO_8086();
+        #10
         TASK_SEND_NON_SPECIFIC_EOI();
 
         TASK_SEND_ACK_TO_8086();
+        #10
         TASK_SEND_NON_SPECIFIC_EOI();
-
+  */
 	/*    
         // OCW3
         TASK_WRITE_DATA(1'b0, 8'b11000111);//SET PRIORITY COMMAND ///{L2,L1,L0}=7
@@ -688,56 +715,56 @@ endtask
 initial begin
         TASK_INIT();
 	
-	
- 	$display("				******************************** ");
-	$display("				***** TEST 8086 INTERRUPT******* ");
-	$display("				******************************** ");
+		
+ 	$display("									******************************** ");
+	$display("									***** TEST 8086 INTERRUPT******* ");
+	$display("									******************************** ");
         TASK_8086_NORMAL_INTERRUPT_TEST();
 	
 	
-	/*
-	$display(                             "******************************** ");
-        $display(                             "***** TEST INTERRUPT MASK ****** ") ;
-        $display(                             "******************************** ");
+	
+	$display("									******************************** ");
+        $display("									***** TEST INTERRUPT MASK******* ") ;
+        $display("									******************************** ");
         TASK_INTERRUPT_MASK_TEST();
-	*/
 	
-	/*
-	$display(                             "******************************** ");
-        $display(                             "***** TEST AUTO EOI        ***** ");
-        $display(                             "******************************** ");
+	
+	
+	$display("									******************************** ");
+        $display("									***** TEST AUTO EOI************* ");
+        $display("									******************************** ");
         TASK_AUTO_EOI_TEST();
-	*/
 	
-	/*
-	$display(                             "***************************************** ");
-        $display(                             "***** TEST NON SPECIAL FULLY NESTED ***** ");
-        $display(                             "***************************************** ");
+	
+	
+	$display("									***************************************** ");
+        $display("									***** TEST NON SPECIAL FULLY NESTED ***** ");
+        $display("									***************************************** ");
         TASK_NON_SPECTAL_FULLY_NESTED_TEST();
-	*/
 	
-	/*
-	$display(                             "******************************** ");
-        $display(                             "***** TEST NON SPECIFIC EOI***** ");
-        $display(                             "******************************** ");
+
+	
+	$display("									******************************** ");
+        $display("									***** TEST NON SPECIFIC EOI***** ");
+        $display("									******************************** ");
         TASK_NON_SPECIFIC_EOI_TEST();
-	*/
 	
-	/*
-	$display(                             "******************************** ");
-        $display(                             "***** TEST ROTATION       ****** ");
-        $display(                             "******************************** ");
+	
+	
+	$display("									******************************** ");
+        $display("									***** TEST ROTATION ************ ");
+        $display( "									******************************** ");
         TASK_ROTATE_TEST();
-	*/
 	
-	/*
- 	$display(                             "******************************** ");
-        $display(                             "***** READING STATUS       ***** ");
-        $display(                             "******************************** ");
+	
+	
+ 	$display("									******************************** ");
+        $display("									***** READING STATUS *********** ");
+        $display("									******************************** ");
         TASK_READING_STATUS_TEST();
-	*/
+	
 end
 
- always @* $monitor("At time %t: CS_n = %b, RD_n = %b, WR_n = %b, A0 = %b, CAS = %b , SP_EN_n = %b , D = %b,INT = %b,IR = %b",
-                    $time, chip_select_wire , read_enable_wire , write_enable_wire  , A0_wire ,  CAS_wire , SP_EN_wire , data_bus_wire,INT_wire,IRR_wire);
+ always @* $monitor("At time %t: CS_n = %b, RD_n = %b, WR_n = %b, A0 = %b, CAS = %b , SP_EN_n = %b , D = %b ,INT = %b , INTA_n = %b ,IR = %b",
+                    $time, chip_select_wire , read_enable_wire , write_enable_wire  , A0_wire ,  CAS_wire , SP_EN_wire , data_bus_wire ,INT_wire, INTA_wire ,IRR_wire);
 endmodule

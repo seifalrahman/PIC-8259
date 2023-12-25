@@ -4,7 +4,9 @@ module Control_Logic(
     // Read_writeLogic***********************************************
     input wire  [7:0]   ReadWriteinputData,
     
-    
+    //Cascade
+	input wire [7:0] codeAddress ,
+
     //ICW1 -> flag==0
     //OCW3 -> flag==6
     input wire  [2:0]   FlagFromRW , 
@@ -21,6 +23,7 @@ module Control_Logic(
     //ISR************************************************************
     input wire [7:0]  ISRinput ,
     input wire [7:0]  highest_level_in_service ,
+    output reg NON_SPEC_EN = 1'b0,
     //***************************************************************
     //CASCADEMODULE**************************************************
     output reg SP_ENCascade ,
@@ -41,7 +44,8 @@ module Control_Logic(
     output  reg   [2:0]   priority_rotate = 3'b111,
     output  reg           freeze = 1'b0,
     output  reg          latch_in_service = 1'b0,
-    output  reg   [7:0]  clear_interrupt_request
+    output  reg   [7:0]  clear_interrupt_request,
+    output  reg 	Flag2Buffer
     
 );
     reg [7:0] CWregFile [6:0] ; //ICW .....OCW
@@ -50,6 +54,7 @@ module Control_Logic(
     reg AEOI ;
     reg [1:0] SpecialMaskModeFlag ;
     reg end_of_acknowledge_sequence;
+   
 //This Block Stores The ICWs and OCWs in our register File and sets their Flags to indicate that we stored them 
     reg [1:0]cnt=0 ;
     
@@ -119,7 +124,7 @@ end
 
 
 // WRITE IMR-------ISR-----IRR onto the data buffer
-always @ (read2controlRW)begin
+always @ (*)begin
 if(read2controlRW==3'b011)begin//IMR
 	DataBufferOutput=CWregFile[4] ;
 end
@@ -142,12 +147,12 @@ assign IRRCascade = InterruptID ;
 // Acknowledge + Freeze + CLR IRR
 
 always @(posedge INTA)begin
-	
+	Flag2Buffer = 0 ;
 	cnt=cnt+1;
 	if(cnt==1) begin
 	  	end_of_acknowledge_sequence=0 ;
 	  	
-	  	latch_in_service = 1;
+	  	latch_in_service = 1; // handle here if non spec dont use latch   latch = 0 
 	end
 	
 	else if(cnt==2)begin
@@ -161,7 +166,12 @@ end
 //Freeze
 always @ (negedge INTA)begin
   freeze = 0;
+  NON_SPEC_EN= 1'b0 ;
   latch_in_service = 0;
+  if(cnt == 1)begin
+	DataBufferOutput = codeAddress;
+	Flag2Buffer = 1;
+end
 end
 
 
@@ -199,6 +209,7 @@ Num_To_Bit n1(
      .source(CWregFile[5][2:0]),
      .num2bit(Specific_EOI)
 );
+wire [7:0] NON_SPEC_EOI ;
 
 // End of interrupt
 always @(*) begin
@@ -207,7 +218,7 @@ always @(*) begin
             end_of_interrupt = highest_level_in_service;
         else if (FlagFromRW == 3'b101) begin
             case (CWregFile[5][6:5])
-                2'b01:   end_of_interrupt = highest_level_in_service;
+                2'b01:   NON_SPEC_EN= 1'b1 ;
                 2'b11:   end_of_interrupt = Specific_EOI;
                 default: end_of_interrupt = 8'b00000000;
             endcase
@@ -236,7 +247,7 @@ end
     // which is used in Priority Resolver
     
     // Used to hold results after changing Bits to a Number
-    wire [2:0] Non_spec_EOI_rotation = 3'b000;
+    wire [2:0] Non_spec_EOI_rotation ;
     
     Bit_To_Num b1( 
         .source(highest_level_in_service), 

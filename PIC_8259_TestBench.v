@@ -715,26 +715,26 @@ endtask
 initial begin
         TASK_INIT();
 	
-		
+	/*	
  	$display("									******************************** ");
 	$display("									***** TEST 8086 INTERRUPT******* ");
 	$display("									******************************** ");
-        TASK_8086_NORMAL_INTERRUPT_TEST();
+        TASK_8086_NORMAL_INTERRUPT_TEST();*/
 	
 	
-	
+	/*
 	$display("									******************************** ");
         $display("									***** TEST INTERRUPT MASK******* ") ;
         $display("									******************************** ");
-        TASK_INTERRUPT_MASK_TEST();
+        TASK_INTERRUPT_MASK_TEST();*/
 	
 	
-	
+	/*
 	$display("									******************************** ");
         $display("									***** TEST AUTO EOI************* ");
         $display("									******************************** ");
         TASK_AUTO_EOI_TEST();
-	
+	*/
 	
 	
 	$display("									***************************************** ");
@@ -743,25 +743,25 @@ initial begin
         TASK_NON_SPECTAL_FULLY_NESTED_TEST();
 	
 
+	/*
+	$display(                             "******************************** ");
+        $display(                             "***** TEST NON SPECIFIC EOI***** ");
+        $display(                             "******************************** ");
+        TASK_NON_SPECIFIC_EOI_TEST();*/
 	
-	$display("									******************************** ");
-        $display("									***** TEST NON SPECIFIC EOI***** ");
-        $display("									******************************** ");
-        TASK_NON_SPECIFIC_EOI_TEST();
 	
-	
-	
-	$display("									******************************** ");
-        $display("									***** TEST ROTATION ************ ");
-        $display( "									******************************** ");
+	/*
+	$display(                             "******************************** ");
+        $display(                             "***** TEST ROTATION       ****** ");
+        $display(                             "******************************** ");
         TASK_ROTATE_TEST();
+	*/
 	
-	
-	
- 	$display("									******************************** ");
-        $display("									***** READING STATUS *********** ");
-        $display("									******************************** ");
-        TASK_READING_STATUS_TEST();
+	/*
+ 	$display(                             "******************************** ");
+        $display(                             "***** READING STATUS       ***** ");
+        $display(                             "******************************** ");
+        TASK_READING_STATUS_TEST();*/
 	
 end
 

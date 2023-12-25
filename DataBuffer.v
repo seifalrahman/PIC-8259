@@ -1,8 +1,17 @@
-module DataBuffer (
-  inout wire [7:0] D, InternalD,
-  input wire R , W ,
-  input Flag_From_Cascade 
+module DataBuffer(
+		inout wire     	[7:0]    Data   		,
+        	output reg     	[7:0]    InternalD_out		,
+		input wire	[7:0]	InternalD_in		,    
+            	input wire       	 R        		,
+          	input wire        	 W       		,
+		input wire		flagFromControl		
 );
-    assign D = ((R == 0 && W == 1) || Flag_From_Cascade == 1) ? InternalD : 8'bzzzzzzzz;//CPU read
-    assign InternalD = (R == 1 && W == 0) ? D : 8'bzzzzzzzz;//CPU write
+
+always @ (*)
+begin
+	if(R==1 && W==0)//write
+		InternalD_out = Data;
+end
+
+assign Data = ((R == 0 && W == 1) || flagFromControl == 1) ? InternalD_in : 8'bzzzzzzzz ;//read
 endmodule

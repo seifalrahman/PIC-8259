@@ -5,7 +5,8 @@ module In_Service(
     input      [7:0]   interrupt_special_mask,
     input      [7:0]   interrupt,
     input              latch_in_service,
-    input      [7:0]   end_of_interrupt ,  
+    input      [7:0]   end_of_interrupt ,
+    input             NON_SPEC_EN ,
 
     // Outputs
     output  reg     [7:0]   in_service_register = 8'b00000000,
@@ -23,6 +24,10 @@ module In_Service(
                                      | (latch_in_service == 1'b1 ? interrupt : 8'b00000000);
   end
   
+  always @(NON_SPEC_EN ) begin
+            in_service_register = (in_service_register & ~highest_level_in_service);
+  end
+  
   wire [7:0] final_next_highest_level_in_service;
   wire [7:0] rotated_next_highest_level_in_service, resolved_next_highest_level_in_service;
   
@@ -30,7 +35,7 @@ module In_Service(
   
   assign ISR_SpecialMasked = in_service_register & ~interrupt_special_mask;
   
-  always @(*) begin
+  always @(final_next_highest_level_in_service) begin
       // (ISR) & (special mask)
       //rotate right     (Implemented by module below)
       //Resolve Priority (Implemented by module below)
@@ -57,7 +62,7 @@ module In_Service(
       .rotated_L_output(final_next_highest_level_in_service)
   );  
 
-  always @(*) begin
+  always @(next_highest_level_in_service) begin
           highest_level_in_service <= next_highest_level_in_service;
   end
 

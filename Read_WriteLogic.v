@@ -94,7 +94,7 @@ begin : Write_Logic
     
 	end        
 end
-always @(RD) 
+always @(*) 
 begin : Read_Logic
 	if(WR==1 && RD==0&& CS==0)
 	begin

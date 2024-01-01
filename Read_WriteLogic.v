@@ -11,7 +11,7 @@ reg ICW1 ,ICW2,ICW3,ICW4,OCW1,OCW2,OCW3 ;//flags for ICW ...... OCW
 reg [1:0] LastOCW ;//TO KNOW LAST OCW CREATED 
 reg [3:0]counter =0 ;
 
-always @ (WR or inputData)
+always @ (inputData)
 begin : Write_Logic
  	
 	if(WR==0 && RD==1&& CS==0)
@@ -61,8 +61,8 @@ begin : Write_Logic
 		else if((counter==3 &&ICW4==1&&ICW3==1)||(counter==2 &&ICW4==1&& ICW3==0))
 		begin 
 		    /*we noticed that ICW3 is not obligatory to send before ICW2 so we had the different values of counter into consideration while detecting ICW4*/
-    			LastOCW=0 ;
-    			regFile[3]=inputData ;
+    			LastOCW = 0 ;
+    			regFile[3] = inputData ;
     			Flag=3;
     			counter=5;//start recieving the OCWs
 		end
@@ -94,7 +94,7 @@ begin : Write_Logic
     
 	end        
 end
-always @(*) 
+always @(RD) 
 begin : Read_Logic
 	if(WR==1 && RD==0&& CS==0)
 	begin

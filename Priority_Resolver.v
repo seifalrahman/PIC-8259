@@ -4,6 +4,7 @@ module Priority_Resolver(
     input   wire   [2:0]   priority_rotate,
     input   wire   [7:0]   interrupt_mask,
     input   wire   [7:0]   interrupt_special_mask,
+    input   wire freeze,
 
     // Inputs from interrupt request 
     input   wire   [7:0]   interrupt_request_register,
@@ -24,7 +25,10 @@ module Priority_Resolver(
         
     always @(*) begin
       //check masking
-      masked_interrupt_req = interrupt_request_register & ~interrupt_mask;
+      if(freeze)
+        masked_interrupt_req = masked_interrupt_req;
+      else
+        masked_interrupt_req = interrupt_request_register & ~interrupt_mask;
       //check masking in case of special masking
       masked_in_service    = in_service_register & ~interrupt_special_mask;
     end

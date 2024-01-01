@@ -3,7 +3,7 @@ module Num_To_Bit (
     output wire [7:0] num2bit
 );
 
-    assign num2bit = (source == 3'b000) ? 8'b00000001 :
+    assign num2bit = (source == 3'b000) ? 8'b00000001:
                     (source == 3'b001) ? 8'b00000010 :
                     (source == 3'b010) ? 8'b00000100 :
                     (source == 3'b011) ? 8'b00001000 :

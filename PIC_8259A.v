@@ -121,11 +121,13 @@ In_Service ISR (
 	.end_of_interrupt(end_of_interrupt)		,
 	.in_service_register(ISR_2Pri_Control)		,
 	.highest_level_in_service(highest_IS)		,
-	.NON_SPEC_EN()	
+	.NON_SPEC_EN(NON_SPEC_EN)	
 	);
 
 
 Control_Logic CONTROL_LOGIC(
+	//TOP_Module
+	.RD(RD_n)					,
 	//ReadWrite-->Control
 	.ReadWriteinputData(W_Data_2Control)		,		 
 	.FlagFromRW(W_Flag_2Control)			,		

@@ -374,7 +374,7 @@ task TASK_NON_SPECTAL_FULLY_NESTED_TEST();
     begin
         #10;
         // ICW1
-	TASK_WRITE_DATA(1'b0, 8'b00010111);
+	      TASK_WRITE_DATA(1'b0, 8'b00010111);
         // ICW2
         TASK_WRITE_DATA(1'b1, 8'b00000000);
         // ICW4
@@ -389,22 +389,24 @@ task TASK_NON_SPECTAL_FULLY_NESTED_TEST();
 	
 	//Freeze Test	
         INTA = 1'b1;
-    	#10;
-    	INTA = 1'b0;
-    	#10;
-    	INTA = 1'b1;
-	TASK_INTERRUPT_REQUEST(8'b00000001);
-    	#10;
-    	INTA = 1'b0;
-   	 #10;
-    	INTA = 1'b1;
-								
-	//TASK_SEND_ACK_TO_8086();							
+        	#10;
+        	INTA = 1'b0;
+        	#10;
+       	INTA = 1'b1;
+	       TASK_INTERRUPT_REQUEST(8'b00000001);
+	     
+    	   INTA = 1'b0;
+   	     #10;
+    	   INTA = 1'b1;
+					#10			
+	     TASK_SEND_ACK_TO_8086();							
         #10;//							|
+        TASK_SEND_SPECIFIC_EOI(3'b000);
         TASK_INTERRUPT_REQUEST(8'b00100000);    // 5		|
         TASK_INTERRUPT_REQUEST(8'b01000000);    // 6		|
         TASK_INTERRUPT_REQUEST(8'b00001000);    // 3		|
         TASK_SEND_ACK_TO_8086();	//			|
+        
         TASK_SEND_SPECIFIC_EOI(3'b011); //                      |
         TASK_SEND_SPECIFIC_EOI(3'b100);//first one--------------
         TASK_SEND_ACK_TO_8086();      //5
@@ -725,60 +727,131 @@ task TASK_ROTATE_TEST();
         #10;
     end
 endtask
+
+task TASK_INTERRUPT_REQUEST_level;
+  input [7:0] request;
+begin
+    #10; // Assuming no delay for this step
+    IRR = request;
+end
+endtask
+
+task TASK_8086_NORMAL_INTERRUPT_TEST_level();
+    begin
+        #10;
+ 
+        // ICW1
+        TASK_WRITE_DATA(1'b0, 8'b00011111);//EDGE_TRIGGERED---SINGLE----ICW4->allowed
+        // ICW2
+        TASK_WRITE_DATA(1'b1, 8'b10101000);//Vector Address={10101,IRR}
+        // ICW4
+        TASK_WRITE_DATA(1'b1, 8'b00000001);//NORMAL EOI---NON_BUFFERED
+        // OCW1
+        TASK_WRITE_DATA(1'b1, 8'b00000000);//all interrupts are unmasked 
+        // OCW3
+        TASK_WRITE_DATA(1'b0, 8'b00001000);
+	chip_select   = 1'b0;
+   	 write_enable  = 1'b1;
+  	 read_enable   = 1'b1;
+        // Interrupt
+        TASK_INTERRUPT_REQUEST_level(8'b00000001);
+        TASK_SEND_ACK_TO_8086();
+        TASK_INTERRUPT_REQUEST_level(8'b00000000);
+        TASK_SEND_SPECIFIC_EOI(3'b000);
+
+        TASK_INTERRUPT_REQUEST_level(8'b00000010);
+        TASK_SEND_ACK_TO_8086();
+        TASK_INTERRUPT_REQUEST_level(8'b00000000);
+        TASK_SEND_SPECIFIC_EOI(3'b001);
+
+        TASK_INTERRUPT_REQUEST_level(8'b00000100);
+        TASK_SEND_ACK_TO_8086();
+        TASK_INTERRUPT_REQUEST_level(8'b00000000);
+        TASK_SEND_SPECIFIC_EOI(3'b010);
+
+        TASK_INTERRUPT_REQUEST_level(8'b00001000);
+        TASK_SEND_ACK_TO_8086();
+        TASK_INTERRUPT_REQUEST_level(8'b00000000);
+        TASK_SEND_SPECIFIC_EOI(3'b011);
+
+        TASK_INTERRUPT_REQUEST_level(8'b00010000);
+        TASK_SEND_ACK_TO_8086();
+        TASK_INTERRUPT_REQUEST_level(8'b00000000);
+        TASK_SEND_SPECIFIC_EOI(3'b100);
+
+        TASK_INTERRUPT_REQUEST_level(8'b00100000);
+        TASK_SEND_ACK_TO_8086();
+        TASK_INTERRUPT_REQUEST_level(8'b00000000);
+        TASK_SEND_SPECIFIC_EOI(3'b101);
+
+        TASK_INTERRUPT_REQUEST_level(8'b01000000);
+        TASK_SEND_ACK_TO_8086();
+        TASK_INTERRUPT_REQUEST_level(8'b00000000);
+        TASK_SEND_SPECIFIC_EOI(3'b110);
+
+        TASK_INTERRUPT_REQUEST_level(8'b10000000);
+        TASK_SEND_ACK_TO_8086();
+        TASK_INTERRUPT_REQUEST_level(8'b00000000);
+        TASK_SEND_SPECIFIC_EOI(3'b111);
+    end
+endtask
 	
 initial begin
        TASK_INIT();
 	
-	
+	/*
  	$display("									******************************** ");
 	$display("									***** TEST 8086 INTERRUPT******* ");
 	$display("									******************************** ");
         TASK_8086_NORMAL_INTERRUPT_TEST();
-	
+	*/
 	
 	/*
 	$display("									******************************** ");
         $display("									***** TEST INTERRUPT MASK******* ") ;
         $display("									******************************** ");
-        TASK_INTERRUPT_MASK_TEST();*/
-	
+        TASK_INTERRUPT_MASK_TEST();
+	*/
 	
 	/*
 	$display("									******************************** ");
         $display("									***** TEST AUTO EOI************* ");
         $display("									******************************** ");
-        TASK_AUTO_EOI_TEST();*/
-	
+        TASK_AUTO_EOI_TEST();
+	*/
 	
 	/*
 	$display("									***************************************** ");
         $display("									***** TEST NON SPECIAL FULLY NESTED ***** ");
         $display("									***************************************** ");
-        TASK_NON_SPECTAL_FULLY_NESTED_TEST();*/
-	
+        TASK_NON_SPECTAL_FULLY_NESTED_TEST();
+	*/
 
 	/*
 	$display("									******************************** ");
         $display("									***** TEST NON SPECIFIC EOI***** ");
         $display("									******************************** ");
-        TASK_NON_SPECIFIC_EOI_TEST();*/
-	
+        TASK_NON_SPECIFIC_EOI_TEST();
+	*/
 	
 	/*
 	$display("									******************************** ");
         $display("									***** TEST ROTATION       ****** ");
         $display("									******************************** ");
-        TASK_ROTATE_TEST();//bounes*/
+        TASK_ROTATE_TEST();//boun*/
 	
 	
 	/*
  	$display("									******************************** ");
         $display("									***** READING STATUS       ***** ");
         $display("									******************************** ");
-        TASK_READING_STATUS_TEST();*/
+        TASK_READING_STATUS_TEST();
+        */
+  TASK_8086_NORMAL_INTERRUPT_TEST_level();
 	
 end
 
  always @* $monitor("At time %t: CS_n = %b, RD_n = %b, WR_n = %b, A0 = %b, CAS = %b , SP_EN_n = %b , D = %b ,INT = %b , INTA_n = %b ,IR = %b",
                     $time, chip_select_wire , read_enable_wire , write_enable_wire  , A0_wire ,  CAS_wire , SP_EN_wire , data_bus_wire ,INT_wire, INTA_wire ,IRR_wire);
 endmodule
+

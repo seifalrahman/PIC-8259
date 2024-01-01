@@ -49,6 +49,7 @@ PIC_8259A pic (
 
 task TASK_INIT;
 begin
+   
     #10 ;
     CAS                     = 1'b1;
     read_enable             = 1'b1;
@@ -56,11 +57,11 @@ begin
     A0                      = 1'b0;
     data_bus                = 8'b00000000;
     CAS                     = 3'b000;
-    SP_EN                   = 1'b0;
     INTA                    = 1'b1;
+    SP_EN                   = 1'b0;
     IRR                     = 8'b00000000;
     TASK_SEND_ACK_TO_8086();
-    
+
 end
 endtask
 
@@ -377,15 +378,28 @@ task TASK_NON_SPECTAL_FULLY_NESTED_TEST();
         // ICW2
         TASK_WRITE_DATA(1'b1, 8'b00000000);
         // ICW4
-        TASK_WRITE_DATA(1'b1, 8'b00001101);
+        TASK_WRITE_DATA(1'b1, 8'b00000001);
         // OCW1
         TASK_WRITE_DATA(1'b1, 8'b00000000);
         // OCW3
         TASK_WRITE_DATA(1'b0, 8'b00001000);
 
         // Interrupt
-        TASK_INTERRUPT_REQUEST(8'b00010000);    // 4<------------		|
-        TASK_SEND_ACK_TO_8086();//				|
+        TASK_INTERRUPT_REQUEST(8'b00010000);    // 4<-----------	
+	
+	//Freeze Test	
+        INTA = 1'b1;
+    	#10;
+    	INTA = 1'b0;
+    	#10;
+    	INTA = 1'b1;
+	TASK_INTERRUPT_REQUEST(8'b00000001);
+    	#10;
+    	INTA = 1'b0;
+   	 #10;
+    	INTA = 1'b1;
+								
+	//TASK_SEND_ACK_TO_8086();							
         #10;//							|
         TASK_INTERRUPT_REQUEST(8'b00100000);    // 5		|
         TASK_INTERRUPT_REQUEST(8'b01000000);    // 6		|
@@ -408,7 +422,7 @@ task TASK_AUTO_EOI_TEST();
         // ICW2
         TASK_WRITE_DATA(1'b1, 8'b00000000);
         // ICW4
-        TASK_WRITE_DATA(1'b1, 8'b00001111);
+        TASK_WRITE_DATA(1'b1, 8'b00000011);
         // OCW1
         TASK_WRITE_DATA(1'b1, 8'b00000000);
         // OCW3
@@ -454,7 +468,7 @@ endtask
         // ICW2
         TASK_WRITE_DATA(1'b1, 8'b00000000);
         // ICW4
-        TASK_WRITE_DATA(1'b1, 8'b00001101);
+        TASK_WRITE_DATA(1'b1, 8'b00000001);
         // OCW1
         TASK_WRITE_DATA(1'b1, 8'b11111111);//MASK all Interrupts 
         // OCW3
@@ -533,7 +547,7 @@ task TASK_NON_SPECIFIC_EOI_TEST();
         // ICW2
         TASK_WRITE_DATA(1'b1, 8'b00000000);
         // ICW4
-        TASK_WRITE_DATA(1'b1, 8'b00001101);
+        TASK_WRITE_DATA(1'b1, 8'b00000001);
         // OCW1
         TASK_WRITE_DATA(1'b1, 8'b00000000);
         // OCW3
@@ -577,11 +591,11 @@ task TASK_ROTATE_TEST();
     begin
         #10;
         // ICW1
-	      TASK_WRITE_DATA(1'b0, 8'b00010111);
+	TASK_WRITE_DATA(1'b0, 8'b00010111);
         // ICW2
         TASK_WRITE_DATA(1'b1, 8'b00000000);
         // ICW4
-        TASK_WRITE_DATA(1'b1, 8'b00001101);
+        TASK_WRITE_DATA(1'b1, 8'b00000001);
         // OCW1
         TASK_WRITE_DATA(1'b1, 8'b00000000);
         // OCW3
@@ -713,13 +727,13 @@ task TASK_ROTATE_TEST();
 endtask
 	
 initial begin
-        TASK_INIT();
+       TASK_INIT();
 	
-	/*	
+	
  	$display("									******************************** ");
 	$display("									***** TEST 8086 INTERRUPT******* ");
 	$display("									******************************** ");
-        TASK_8086_NORMAL_INTERRUPT_TEST();*/
+        TASK_8086_NORMAL_INTERRUPT_TEST();
 	
 	
 	/*
@@ -733,34 +747,34 @@ initial begin
 	$display("									******************************** ");
         $display("									***** TEST AUTO EOI************* ");
         $display("									******************************** ");
-        TASK_AUTO_EOI_TEST();
-	*/
+        TASK_AUTO_EOI_TEST();*/
 	
 	
+	/*
 	$display("									***************************************** ");
         $display("									***** TEST NON SPECIAL FULLY NESTED ***** ");
         $display("									***************************************** ");
-        TASK_NON_SPECTAL_FULLY_NESTED_TEST();
+        TASK_NON_SPECTAL_FULLY_NESTED_TEST();*/
 	
 
 	/*
-	$display(                             "******************************** ");
-        $display(                             "***** TEST NON SPECIFIC EOI***** ");
-        $display(                             "******************************** ");
+	$display("									******************************** ");
+        $display("									***** TEST NON SPECIFIC EOI***** ");
+        $display("									******************************** ");
         TASK_NON_SPECIFIC_EOI_TEST();*/
 	
 	
 	/*
-	$display(                             "******************************** ");
-        $display(                             "***** TEST ROTATION       ****** ");
-        $display(                             "******************************** ");
-        TASK_ROTATE_TEST();
-	*/
+	$display("									******************************** ");
+        $display("									***** TEST ROTATION       ****** ");
+        $display("									******************************** ");
+        TASK_ROTATE_TEST();//bounes*/
+	
 	
 	/*
- 	$display(                             "******************************** ");
-        $display(                             "***** READING STATUS       ***** ");
-        $display(                             "******************************** ");
+ 	$display("									******************************** ");
+        $display("									***** READING STATUS       ***** ");
+        $display("									******************************** ");
         TASK_READING_STATUS_TEST();*/
 	
 end

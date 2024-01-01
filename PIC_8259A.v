@@ -99,6 +99,7 @@ Priority_Resolver Pri_Res(
 	.priority_rotate(priority_rotate)		,
 	.interrupt_mask(interrupt_mask)			,
 	.interrupt_special_mask(interrupt_special_mask)	,
+	.freeze(freeze),
 	.interrupt_request_register(IRQs_2Pri_Resolver)	,
 	.in_service_register(ISR_2Pri_Control)		,
 	.interrupt(InterruptID)					
@@ -169,3 +170,4 @@ Control_Logic CONTROL_LOGIC(
 	);
 
 endmodule
+

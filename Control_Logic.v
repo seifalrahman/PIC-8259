@@ -1,3 +1,4 @@
+//`timescale 1ns /100ps
 module Control_Logic(
     //Top_Module
     input wire RD			,
@@ -154,13 +155,14 @@ always @(posedge INTA)begin
 	if(cnt==1) begin
 	  	end_of_acknowledge_sequence=0 ;
 	  	
-	  	latch_in_service = 1; // handle here if non spec dont use latch   latch = 0 
+	  	latch_in_service = 1; 
 	end
 	
 	else if(cnt==2)begin
 		 cnt=0;
 		 end_of_acknowledge_sequence=1 ;
 		 freeze=0;
+		 INT=0 ;
 	end
 	
 end
@@ -176,13 +178,28 @@ always @ (negedge INTA)begin
 end
 end
 
+  reg intermediate_signal;
+ wire input_signal=1;
+   reg delayed_signal;
+
 
 //Int Signal
 always @ (InterruptID)begin
-	if(InterruptID!=0)
-		INT=1 ;
-	else
-		INT=0 ;
+  if( ((( IRRinput[0] + IRRinput[1] + IRRinput[2] + IRRinput[3] + IRRinput[4] + IRRinput[5] + IRRinput[6] + IRRinput[7] ) >1)&& AEOI == 1) || (InterruptID < highest_level_in_service) )
+  begin
+     /*intermediate_signal = input_signal & input_signal;
+     delayed_signal = intermediate_signal;*/
+     //#3;
+     if(InterruptID!=0)
+		       INT=1 ;
+  end
+  
+  else begin
+	   if(InterruptID!=0)
+		    INT=1 ;
+		end
+	//else
+		//INT=0 ;
 
 end
 
@@ -298,3 +315,4 @@ end
    
    
 endmodule
+

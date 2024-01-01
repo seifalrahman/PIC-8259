@@ -1,6 +1,6 @@
 module Control_Logic(
-
-
+    //Top_Module
+    input wire RD			,
     // Read_writeLogic***********************************************
     input wire  [7:0]   ReadWriteinputData,
     
@@ -94,6 +94,7 @@ end
 	else if (FlagFromRW==3)begin
 		CWregFile[3]=ReadWriteinputData ;
 		ICW4=1;
+		freeze = 0;
 		if(CWregFile[3][3]==1)
 			SP_ENCascade=CWregFile[3][2];
 		if(SP_ENCascade==1&& SNGL==0)//MASTER----CASCADE
@@ -125,6 +126,7 @@ end
 
 // WRITE IMR-------ISR-----IRR onto the data buffer
 always @ (*)begin
+if(RD == 0)begin
 if(read2controlRW==3'b011)begin//IMR
 	DataBufferOutput=CWregFile[4] ;
 end
@@ -138,7 +140,7 @@ end
 else if (read2controlRW==3'b111)begin  //IRR
         DataBufferOutput=IRRinput ;
 end
-
+end
 end
 
 assign IRRCascade = InterruptID ;
@@ -165,7 +167,7 @@ end
 
 //Freeze
 always @ (negedge INTA)begin
-  freeze = 0;
+  freeze = 1;
   NON_SPEC_EN= 1'b0 ;
   latch_in_service = 0;
   if(cnt == 1)begin
@@ -204,7 +206,7 @@ end
   
     
 //register to hold result of Num_To_Bit(value data bus) in case of specific EOI
-wire [7:0] Specific_EOI ;    
+wire [7:0] Specific_EOI ;
 Num_To_Bit n1(
      .source(CWregFile[5][2:0]),
      .num2bit(Specific_EOI)

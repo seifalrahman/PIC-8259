@@ -178,10 +178,6 @@ always @ (negedge INTA)begin
 end
 end
 
-  reg intermediate_signal;
- wire input_signal=1;
-   reg delayed_signal;
-
 
 //Int Signal
 always @ (InterruptID)begin

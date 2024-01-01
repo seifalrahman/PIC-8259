@@ -831,14 +831,14 @@ initial begin
 	$display("									******************************** ");
         $display("									***** TEST NON SPECIFIC EOI***** ");
         $display("									******************************** ");
-        TASK_NON_SPECIFIC_EOI_TEST();
+        TASK_NON_SPECIFIC_EOI_TEST();//bonus
 	*/
 	
 	/*
 	$display("									******************************** ");
         $display("									***** TEST ROTATION       ****** ");
         $display("									******************************** ");
-        TASK_ROTATE_TEST();//boun*/
+        TASK_ROTATE_TEST();//bonus*/
 	
 	
 	/*
@@ -847,11 +847,13 @@ initial begin
         $display("									******************************** ");
         TASK_READING_STATUS_TEST();
         */
-  TASK_8086_NORMAL_INTERRUPT_TEST_level();
+	/*$display("									******************************** ");
+        $display("									**TEST INTERRUPT LEVEL STATE *** ");
+        $display("									******************************** ");
+  	TASK_8086_NORMAL_INTERRUPT_TEST_level();*/
 	
 end
 
  always @* $monitor("At time %t: CS_n = %b, RD_n = %b, WR_n = %b, A0 = %b, CAS = %b , SP_EN_n = %b , D = %b ,INT = %b , INTA_n = %b ,IR = %b",
                     $time, chip_select_wire , read_enable_wire , write_enable_wire  , A0_wire ,  CAS_wire , SP_EN_wire , data_bus_wire ,INT_wire, INTA_wire ,IRR_wire);
 endmodule
-

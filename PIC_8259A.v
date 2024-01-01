@@ -69,7 +69,6 @@ Cascademodule Cascade_Buffer_Comparator(
 
 //Control-->IRR
 wire edge_level_config;
-wire freeze;
 wire [7:0] clear_interrupt_request;
 
 //IRR-->(Priority & Control)
@@ -77,7 +76,6 @@ wire [7:0] IRQs_2Pri_Resolver;
 
 Interrupt_Request IRR(
 	.edge_level_config(edge_level_config)		,
-	.freeze(freeze)					,
 	.clear_interrupt_req(clear_interrupt_request)	,
 	.interrupt_req_pin(IR)				,
 	.interrupt_req_register(IRQs_2Pri_Resolver)			
@@ -94,6 +92,9 @@ wire [7:0] ISR_2Pri_Control;
 
 //Priority -->(Control & ISR)
 wire [7:0] InterruptID;
+
+//Control-->Priority
+wire freeze;
 
 Priority_Resolver Pri_Res(
 	.priority_rotate(priority_rotate)		,
@@ -163,7 +164,7 @@ Control_Logic CONTROL_LOGIC(
 	//Control-->ISR
 	.end_of_interrupt(end_of_interrupt)		,
 	.latch_in_service(Latch)			,
-	//Control-->IRR
+	//Control-->ISR
 	.freeze(freeze)					,
 	.clear_interrupt_request(clear_interrupt_request),
 	.NON_SPEC_EN(NON_SPEC_EN)					

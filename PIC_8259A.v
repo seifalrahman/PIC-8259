@@ -38,7 +38,7 @@ wire edge_level_config;
 wire [7:0] clear_interrupt_request;
 
 //IRR-->(Priority & Control)
-wire [7:0] IRQs_2Pri_Resolver;
+wire [7:0] IRR_2Pri_Control;
 
 //Control-->(Priority & ISR)
 wire [2:0] priority_rotate;
@@ -101,7 +101,7 @@ Interrupt_Request IRR(
 	.edge_level_config(edge_level_config)		,
 	.clear_interrupt_req(clear_interrupt_request)	,
 	.interrupt_req_pin(IR)				,
-	.interrupt_req_register(IRQs_2Pri_Resolver)			
+	.interrupt_req_register(IRR_2Pri_Control)			
 	);
 
 /****************PRIORITY RESOLVER MODULE*******************************/
@@ -110,7 +110,7 @@ Priority_Resolver Pri_Res(
 	.interrupt_mask(interrupt_mask)			,
 	.interrupt_special_mask(interrupt_special_mask)	,
 	.freeze(freeze)					,
-	.interrupt_request_register(IRQs_2Pri_Resolver)	,
+	.interrupt_request_register(IRR_2Pri_Control)	,
 	.in_service_register(ISR_2Pri_Control)		,
 	.interrupt(InterruptID)					
 	);
@@ -145,7 +145,7 @@ Control_Logic CONTROL_LOGIC(
 	.codeAddress(codeAddress)			,
 
 	//IRR-->Control
-	.IRRinput(IRQs_2Pri_Resolver)			,
+	.IRRinput(IRR_2Pri_Control)			,
 
 	//Control-->IRR
 	.edge_level_config(edge_level_config)		,

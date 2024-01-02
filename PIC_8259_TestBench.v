@@ -847,10 +847,13 @@ initial begin
         $display("									******************************** ");
         TASK_READING_STATUS_TEST();
         */
-	/*$display("									******************************** ");
+	
+	/*
+ 	$display("									******************************** ");
         $display("									**TEST INTERRUPT LEVEL STATE *** ");
         $display("									******************************** ");
-  	TASK_8086_NORMAL_INTERRUPT_TEST_level();*/
+  	TASK_8086_NORMAL_INTERRUPT_TEST_level();
+	*/
 	
 end
 
